@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinCampus - Smart College Student Finance & Expense Tracker</title>
+  <!-- Google Fonts: DM Sans & Fraunces -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400;1,9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js for smooth high-performance interactive charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation & Status Bar -->
+  <header class="top-navbar" id="topNavbar">
+    <div class="nav-container">
+      <!-- Brand Logo & Identity -->
+      <div class="brand-section" id="navBrandLogo" onclick="app.switchSlide('dashboard')">
+        <div class="brand-gem">💎</div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <h1 data-i18n="appName">FinCampus</h1>
+            <span class="pro-badge">PRO</span>
+          </div>
+          <span class="brand-tagline" data-i18n="tagline">Smart Financial Compass for College Life</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (6 Slides) -->
+      <nav class="nav-links-wrapper" id="navTabs">
+        <button class="nav-btn active" data-slide="dashboard" id="navBtnDashboard" title="Dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text" data-i18n="nav_dashboard">Dashboard</span>
+        </button>
+        <button class="nav-btn" data-slide="transactions" id="navBtnTransactions" title="Transactions">
+          <span class="nav-icon">📑</span>
+          <span class="nav-text" data-i18n="nav_transactions">Transactions</span>
+        </button>
+        <button class="nav-btn" data-slide="add" id="navBtnAdd" title="Add Expense">
+          <span class="nav-icon">➕</span>
+          <span class="nav-text" data-i18n="nav_add">Add Expense</span>
+        </button>
+        <button class="nav-btn" data-slide="analytics" id="navBtnAnalytics" title="Analytics">
+          <span class="nav-icon">📈</span>
+          <span class="nav-text" data-i18n="nav_analytics">Analytics</span>
+        </button>
+        <button class="nav-btn" data-slide="budget" id="navBtnBudget" title="Budget">
+          <span class="nav-icon">🎯</span>
+          <span class="nav-text" data-i18n="nav_budget">Budget</span>
+        </button>
+        <button class="nav-btn" data-slide="profile" id="navBtnProfile" title="Profile & Settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text" data-i18n="nav_profile">Profile & Settings</span>
+        </button>
+      </nav>
+
+      <!-- User Profile & Quick Action -->
+      <div class="nav-user-actions">
+        <div class="allowance-badge" id="headerAllowanceBadge">
+          Loading...
+        </div>
+        <div class="user-profile-pill" id="headerProfilePill" onclick="app.switchSlide('profile')">
+          <div class="avatar-circle" id="headerAvatar">🎓</div>
+          <span class="user-name-text" id="headerStudentName">Student</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport containing the 6 slides -->
+  <main class="app-viewport">
+
+    <!-- ====================================================================
+         SLIDE 1: DASHBOARD
+         ==================================================================== -->
+    <section class="slide-section active" id="slide-dashboard">
+      <!-- Section Header -->
+      <div class="section-header-bar">
+        <div class="title-group">
+          <h2 data-i18n="dash_title">Financial Overview</h2>
+          <p data-i18n="dash_subtitle">Keep your semester money alive and thriving</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary btn-quick-add" id="btnQuickAddFromDash">
+            <span>+</span> <span data-i18n="btn_add_new">+ Add Expense</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hero Summary Metric Cards (4 Cards) -->
+      <div class="dashboard-stats-grid">
+        <!-- 1. Money Left -->
+        <div class="glass-card stat-card featured-card" id="cardRemainingMoney">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="stat_remaining">Money Left</span>
+            <div class="stat-icon" style="background: rgba(165, 196, 174, 0.2); color: var(--color-sage-green);">💰</div>
+          </div>
+          <div class="stat-value text-success" id="dashRemainingMoney">₹ 0</div>
+          <div class="stat-footer-text">
+            <span>Current available balance for month</span>
+          </div>
+        </div>
+
+        <!-- 2. Monthly Budget -->
+        <div class="glass-card stat-card" id="cardMonthlyBudget">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="stat_monthly_budget">Monthly Budget</span>
+            <div class="stat-icon" style="background: rgba(174, 201, 213, 0.25); color: var(--color-dark-slate);">🎯</div>
+          </div>
+          <div class="stat-value" id="dashMonthlyBudget">₹ 0</div>
+          <div class="stat-footer-text">
+            <span>Total allocated student allowance</span>
+          </div>
+        </div>
+
+        <!-- 3. Total Spent -->
+        <div class="glass-card stat-card" id="cardTotalSpent">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="stat_total_spent">Total Spent</span>
+            <div class="stat-icon" style="background: var(--color-soft-coral); color: var(--color-coral-vermilion);">💸</div>
+          </div>
+          <div class="stat-value" id="dashTotalSpent">₹ 0</div>
+          <div class="stat-footer-text">
+            <span>Disbursed so far this month</span>
+          </div>
+        </div>
+
+        <!-- 4. Daily Average & Campus Runway -->
+        <div class="glass-card stat-card" id="cardDailyAverage">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="stat_daily_avg">Daily Average</span>
+            <div class="stat-icon" style="background: rgba(198, 154, 83, 0.18); color: var(--color-brass-gold);">⚡</div>
+          </div>
+          <div class="stat-value" id="dashDailyAvg">₹ 0 / day</div>
+          <div class="stat-footer-text">
+            <span>Runway: <strong id="dashRunwayDays" class="text-success">0 days</strong> (<span id="dashRunwayDesc">remaining</span>)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning System & Active Alert Hub -->
+      <div class="alert-hub" id="dashboardAlertsHub">
+        <!-- Dynamically rendered alerts for category over-budget or rapid pacing -->
+      </div>
+
+      <!-- Spending Overview & Category Breakdown (2 Column Grid) -->
+      <div class="dashboard-grid-2col">
+        <!-- Left: Spending Overview Chart (Cumulative Curve vs Safe Limit Line) -->
+        <div class="glass-card" id="cardSpendingOverview">
+          <div class="chart-card-header">
+            <div>
+              <h3 data-i18n="spending_overview">Spending Overview & Trend</h3>
+              <p class="stat-footer-text">Track your cumulative expenditure vs the ideal daily pacing line</p>
+            </div>
+            <span class="badge badge-success">This Month</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="spendingOverviewCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Right: Category Breakdown Donut Chart -->
+        <div class="glass-card" id="cardCategoryBreakdown">
+          <div class="chart-card-header">
+            <div>
+              <h3 data-i18n="category_breakdown">Category Breakdown</h3>
+              <p class="stat-footer-text">Where does your money go?</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="categoryDonutCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Spending Box & Interactive Calendar Grid -->
+      <div class="dashboard-grid-bottom">
+        <!-- Left: Recent Spending Box -->
+        <div class="glass-card" id="cardRecentSpending">
+          <div class="chart-card-header">
+            <h3 data-i18n="recent_spending">Recent Spending</h3>
+            <button class="btn btn-xs btn-outline" id="btnViewAllTransactions" data-i18n="view_all_transactions">
+              View All Transactions →
+            </button>
+          </div>
+          <div class="recent-list-container" id="recentSpendingList">
+            <!-- Dynamically populated with last 5 transactions -->
+          </div>
+        </div>
+
+        <!-- Right: Interactive Calendar View -->
+        <div class="glass-card calendar-widget" id="cardSpendingCalendar">
+          <div class="calendar-nav-bar">
+            <div>
+              <h3 data-i18n="spending_calendar">Spending Calendar</h3>
+              <p class="stat-footer-text">Click any day to audit daily expenses</p>
+            </div>
+            <div class="calendar-controls">
+              <button class="action-icon-btn" id="btnPrevMonth" title="Previous Month">◀</button>
+              <span class="calendar-month-title" id="calendarMonthYear">Month Year</span>
+              <button class="action-icon-btn" id="btnNextMonth" title="Next Month">▶</button>
+            </div>
+          </div>
+
+          <!-- Calendar Grid 7 columns -->
+          <div class="calendar-grid" id="calendarGrid">
+            <!-- Dynamically populated days -->
+          </div>
+
+          <!-- Popout Day Details Drawer -->
+          <div class="day-details-container" id="calendarDayDetails" style="display: none;">
+            <!-- Rendered on day click -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 2: TRANSACTIONS
+         ==================================================================== -->
+    <section class="slide-section" id="slide-transactions">
+      <div class="section-header-bar">
+        <div class="title-group">
+          <h2 data-i18n="trans_title">Transaction History</h2>
+          <p data-i18n="trans_subtitle">Search, filter, update or audit your college expenses</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" id="btnExportCsv">
+            <span>📥</span> <span data-i18n="btn_export_csv">Export CSV</span>
+          </button>
+          <button class="btn btn-primary btn-quick-add" id="btnAddFromTransactions">
+            <span>+</span> <span data-i18n="btn_add_new">+ Add Expense</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Controls Bar -->
+      <div class="glass-card transactions-filter-bar" id="transactionsFilters">
+        <!-- Search Bar -->
+        <input type="text" class="input-box" id="txSearchInput" placeholder="Search by title, note, or merchant..." data-i18n-placeholder="search_placeholder">
+
+        <!-- Category Dropdown -->
+        <select class="select-box" id="txFilterCategory">
+          <option value="all" data-i18n="filter_all_categories">All Categories</option>
+        </select>
+
+        <!-- Payment Method Dropdown -->
+        <select class="select-box" id="txFilterPayment">
+          <option value="all" data-i18n="filter_all_payments">All Payment Methods</option>
+          <option value="pay_upi">UPI (GPay / PhonePe / Paytm)</option>
+          <option value="pay_cash">Cash</option>
+          <option value="pay_debit">Debit Card</option>
+          <option value="pay_credit">Credit Card</option>
+          <option value="pay_bank">Net Banking</option>
+        </select>
+
+        <!-- Date Range Filter -->
+        <select class="select-box" id="txFilterDate">
+          <option value="this_month" data-i18n="filter_this_month">This Month</option>
+          <option value="this_week" data-i18n="filter_this_week">This Week</option>
+          <option value="today" data-i18n="filter_today">Today</option>
+          <option value="all" data-i18n="filter_all_time">All Time</option>
+        </select>
+
+        <!-- Sort By -->
+        <select class="select-box" id="txSortBy">
+          <option value="date_desc" data-i18n="sort_date_desc">Newest First</option>
+          <option value="date_asc" data-i18n="sort_date_asc">Oldest First</option>
+          <option value="amount_desc" data-i18n="sort_amount_desc">Highest Amount</option>
+          <option value="amount_asc" data-i18n="sort_amount_asc">Lowest Amount</option>
+        </select>
+      </div>
+
+      <!-- Filter Status & Records Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 6px;">
+        <span class="badge badge-neutral" id="txCountBadge">0 records</span>
+        <span class="stat-footer-text">Total Filtered: <strong id="txTotalFiltered">₹ 0</strong></span>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="glass-card transactions-table-wrapper" id="transactionsTableCard">
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th data-i18n="th_date">Date</th>
+              <th data-i18n="th_title">Expense Details</th>
+              <th data-i18n="th_category">Category</th>
+              <th data-i18n="th_payment">Payment Method</th>
+              <th data-i18n="th_amount">Amount</th>
+              <th data-i18n="th_actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 3: ADD EXPENSE / INCOME
+         ==================================================================== -->
+    <section class="slide-section" id="slide-add">
+      <div class="section-header-bar">
+        <div class="title-group">
+          <h2 data-i18n="add_title">Add New Spending</h2>
+          <p data-i18n="add_subtitle">Log your expense instantly to keep your budget accurate</p>
+        </div>
+      </div>
+
+      <div class="glass-card add-form-container" id="addFormCard">
+        <form id="addExpenseForm">
+          <!-- Toggle Expense vs Income -->
+          <div class="tx-type-toggle-group">
+            <div class="tx-type-toggle">
+              <input type="radio" id="typeExpense" name="transactionType" value="expense" checked>
+              <label for="typeExpense" data-i18n="type_expense">Expense</label>
+            </div>
+            <div class="tx-type-toggle">
+              <input type="radio" id="typeIncome" name="transactionType" value="income">
+              <label for="typeIncome" data-i18n="type_income">Income / Allowance</label>
+            </div>
+          </div>
+
+          <!-- Hero Amount Input Field -->
+          <div class="form-group">
+            <label class="form-label" for="addAmountInput" data-i18n="lbl_amount">Amount</label>
+            <div class="amount-hero-input-wrapper">
+              <span class="amount-currency-symbol" id="addCurrencySymbol">₹</span>
+              <input type="number" id="addAmountInput" class="amount-hero-input" placeholder="0.00" step="any" min="0.01" required autofocus>
+            </div>
+          </div>
+
+          <!-- Quick Preset Amount Buttons for College Life -->
+          <div class="preset-buttons-row">
+            <span class="stat-footer-text" data-i18n="quick_presets">Quick Presets:</span>
+            <button type="button" class="preset-amount-btn" data-preset="50">+50 Chai/Snack</button>
+            <button type="button" class="preset-amount-btn" data-preset="120">+120 Canteen</button>
+            <button type="button" class="preset-amount-btn" data-preset="250">+250 Transport</button>
+            <button type="button" class="preset-amount-btn" data-preset="500">+500 Books/Pass</button>
+            <button type="button" class="preset-amount-btn" data-preset="1000">+1,000 Outing</button>
+          </div>
+
+          <!-- Expense Name / Title Input Area -->
+          <div class="form-group">
+            <label class="form-label" for="addTitleInput" data-i18n="lbl_expense_name">Expense Name / Merchant</label>
+            <input type="text" id="addTitleInput" class="input-box" placeholder="e.g. Canteen lunch, Metro pass, Xerox copies" required data-i18n-placeholder="expense_name_placeholder">
+          </div>
+
+          <!-- Category Choosing Area (Visual Cards) -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_category">Category</label>
+            <div class="category-choice-grid" id="addCategoryGrid">
+              <!-- Rendered dynamically with 10 categories -->
+            </div>
+          </div>
+
+          <!-- 2-Column: Payment Method & Date -->
+          <div class="form-group-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="addPaymentInput" data-i18n="lbl_payment_method">Payment Method</label>
+              <select id="addPaymentInput" class="select-box">
+                <option value="pay_upi">UPI (GPay / PhonePe / Paytm)</option>
+                <option value="pay_cash">Cash</option>
+                <option value="pay_debit">Debit Card</option>
+                <option value="pay_credit">Credit Card</option>
+                <option value="pay_bank">Net Banking</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="addDateInput" data-i18n="lbl_date">Date & Time</label>
+              <input type="datetime-local" id="addDateInput" class="input-box" required>
+            </div>
+          </div>
+
+          <!-- Optional Notes / Tag -->
+          <div class="form-group">
+            <label class="form-label" for="addNotesInput" data-i18n="lbl_notes">Notes (Optional)</label>
+            <input type="text" id="addNotesInput" class="input-box" placeholder="e.g. Shared with Rahul, assignment printout" data-i18n-placeholder="notes_placeholder">
+          </div>
+
+          <!-- Submit Action Button -->
+          <button type="submit" class="btn btn-primary" id="btnAddExpenseSubmit" style="width: 100%; padding: 16px; font-size: 16px;">
+            <span>✓</span> <span data-i18n="btn_submit_add">Add to Transactions</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 4: ANALYTICS
+         ==================================================================== -->
+    <section class="slide-section" id="slide-analytics">
+      <div class="section-header-bar">
+        <div class="title-group">
+          <h2 data-i18n="analytics_title">Financial Analytics</h2>
+          <p data-i18n="analytics_subtitle">Deep-dive into your spending psychology & trends</p>
+        </div>
+      </div>
+
+      <!-- Key Analytics Metrics (4 Cards) -->
+      <div class="analytics-metrics-grid">
+        <!-- 1. Total Spending of Month -->
+        <div class="glass-card stat-card" id="cardAnTotalSpent">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="analytics_total_spent">Month Spending</span>
+            <div class="stat-icon" style="background: rgba(165, 196, 174, 0.22); color: var(--color-sage-green);">💳</div>
+          </div>
+          <div class="stat-value" id="analyticsTotalSpent">₹ 0</div>
+          <div class="stat-footer-text">Current billing cycle</div>
+        </div>
+
+        <!-- 2. Daily Average -->
+        <div class="glass-card stat-card" id="cardAnDailyAvg">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="analytics_daily_avg">Daily Average</span>
+            <div class="stat-icon" style="background: rgba(198, 154, 83, 0.18); color: var(--color-brass-gold);">📅</div>
+          </div>
+          <div class="stat-value" id="analyticsDailyAvg">₹ 0 / day</div>
+          <div class="stat-footer-text">Average rate of cash burn</div>
+        </div>
+
+        <!-- 3. Top Category Most Money Spent On -->
+        <div class="glass-card stat-card" id="cardAnTopCat">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="analytics_top_category">Top Spending Category</span>
+            <div class="stat-icon" style="background: var(--color-soft-coral); color: var(--color-coral-vermilion);">🔥</div>
+          </div>
+          <div id="analyticsTopCat" style="margin-top: 6px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- 4. Largest Expense Made this Month -->
+        <div class="glass-card stat-card" id="cardAnLargestExp">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="analytics_largest_expense">Largest Single Expense</span>
+            <div class="stat-icon" style="background: rgba(174, 201, 213, 0.25); color: var(--color-dark-slate);">🎯</div>
+          </div>
+          <div id="analyticsLargestExp" style="margin-top: 6px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Burn-Rate Runway Meter -->
+      <div class="glass-card burn-rate-card" id="cardBurnRateStatus" style="margin-bottom: 24px;">
+        <div class="stat-header">
+          <span class="stat-label" data-i18n="burn_rate_status">Student Runway Assessment</span>
+          <span class="badge badge-neutral">AI Health Check</span>
+        </div>
+        <div id="analyticsBurnStatus">
+          <!-- Dynamically assessed -->
+        </div>
+      </div>
+
+      <!-- Charts 2-Column Grid: Daily Spending Trend Bar Chart & Weekly Comparison -->
+      <div class="analytics-charts-grid">
+        <!-- Daily Spending Trend Bar Chart -->
+        <div class="glass-card" id="cardDailyTrend">
+          <div class="chart-card-header">
+            <div>
+              <h3 data-i18n="spending_trend_title">Daily Spending Trend</h3>
+              <p class="stat-footer-text">Day-by-day expenditure pattern this month</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="dailyTrendCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Weekly Breakdown Bar Chart -->
+        <div class="glass-card" id="cardWeeklyTrend">
+          <div class="chart-card-header">
+            <div>
+              <h3 data-i18n="weekly_breakdown_title">Weekly Spending Comparison</h3>
+              <p class="stat-footer-text">Compare Week 1, 2, 3, and 4 burn rates</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="weeklyTrendCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day of the Week Distribution -->
+      <div class="glass-card" id="cardDayDistribution">
+        <div class="chart-card-header">
+          <div>
+            <h3 data-i18n="day_distribution_title">Spending by Day of Week</h3>
+            <p class="stat-footer-text">Detect weekend vs weekday spending spikes</p>
+          </div>
+        </div>
+        <div class="chart-container" style="height: 260px;">
+          <canvas id="dayDistributionCanvas"></canvas>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 5: BUDGET
+         ==================================================================== -->
+    <section class="slide-section" id="slide-budget">
+      <div class="section-header-bar">
+        <div class="title-group">
+          <h2 data-i18n="budget_title">Budget Management</h2>
+          <p data-i18n="budget_subtitle">Allocate allowances by category & avoid running broke</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" id="btnSaveBudgets" data-i18n="btn_save_budgets">
+            Save Budget Allocations
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="budget-summary-header">
+        <div class="glass-card stat-card">
+          <span class="stat-label" data-i18n="total_budget_alloc">Total Allocated Budget</span>
+          <div class="stat-value" id="budgetTotalAllocated">₹ 0</div>
+          <span class="stat-footer-text">Combined category limits</span>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label" data-i18n="total_spent_label">Total Spent</span>
+          <div class="stat-value" id="budgetTotalSpent">₹ 0</div>
+          <span class="stat-footer-text">Utilized this month</span>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label" data-i18n="total_remaining_label">Remaining Allowance</span>
+          <div class="stat-value text-success" id="budgetTotalRemaining">₹ 0</div>
+          <span class="stat-footer-text">Unspent pool</span>
+        </div>
+      </div>
+
+      <!-- Category Budget Allocation List with Sliders & Inputs -->
+      <div class="budget-category-list" id="budgetCategorySliders">
+        <!-- Rendered dynamically with progress bars, spent, remaining, and limit inputs -->
+      </div>
+
+      <!-- Smart Budget Allocation Recommendation Section -->
+      <div class="smart-recommendation-box" id="smartBudgetRecommendation">
+        <div class="smart-rec-header">
+          <div class="smart-rec-icon">💡</div>
+          <div>
+            <h3 data-i18n="smart_rec_title">Smart Budget Allocation Recommendations</h3>
+            <p class="stat-footer-text" data-i18n="smart_rec_subtitle">AI student-advisor based on the 50/30/20 college survival rule</p>
+          </div>
+        </div>
+
+        <!-- 3 Rule Cards -->
+        <div class="rule-cards-grid">
+          <div class="rule-card">
+            <h5 data-i18n="rule_needs">50% Needs (Food, Transport, Books, Rent)</h5>
+            <p>Essential survival expenses. Pay your mess and hostel dues first. Keep food staples stocked so you never skip meals.</p>
+          </div>
+          <div class="rule-card">
+            <h5 data-i18n="rule_wants">30% Wants (Outings, Movies, Snacks)</h5>
+            <p>Campus fun, cafe runs, and weekend socializing. Cap your weekend spend to avoid the 'first-week binge' trap.</p>
+          </div>
+          <div class="rule-card">
+            <h5 data-i18n="rule_savings">20% Emergency & Buffer Fund</h5>
+            <p>Crucial cushion for surprise semester expenses, exam fees, medical bills, or travel home. Never end the month with zero.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 16px;">
+          <p class="stat-footer-text" style="color: var(--text-muted); max-width: 650px;">
+            Ready to balance your budget automatically? This will configure healthy allowances across Food, Transport, Books, Outings, and Emergency buffers.
+          </p>
+          <button class="btn btn-primary" id="btnApplySmartBudget" data-i18n="btn_apply_smart">
+            Apply Smart College Allocation
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 6: PROFILE & SETTINGS
+         ==================================================================== -->
+    <section class="slide-section" id="slide-profile">
+      <div class="section-header-bar">
+        <div class="title-group">
+          <h2 data-i18n="profile_title">Student Profile & Preferences</h2>
+          <p data-i18n="profile_subtitle">Customize your account, currencies, and appearance</p>
+        </div>
+      </div>
+
+      <div class="profile-grid-2col">
+        <!-- Left: Student Profile Information Form -->
+        <div class="glass-card" id="profileIdentityCard">
+          <div class="profile-card-badge">
+            <div class="profile-big-avatar">🎓</div>
+            <div>
+              <h3 id="profileHeaderName">Student Profile</h3>
+              <p data-i18n="profile_card_title">College Identity</p>
+            </div>
+          </div>
+
+          <form id="profileSettingsForm">
+            <!-- Full Name -->
+            <div class="form-group">
+              <label class="form-label" for="profileNameInput" data-i18n="lbl_full_name">Full Name</label>
+              <input type="text" id="profileNameInput" class="input-box" required>
+            </div>
+
+            <!-- Email Address -->
+            <div class="form-group">
+              <label class="form-label" for="profileEmailInput" data-i18n="lbl_email">Email Address</label>
+              <input type="email" id="profileEmailInput" class="input-box" required>
+            </div>
+
+            <!-- University / College -->
+            <div class="form-group">
+              <label class="form-label" for="profileUniversityInput" data-i18n="lbl_university">University / College</label>
+              <input type="text" id="profileUniversityInput" class="input-box" required>
+            </div>
+
+            <!-- Current Year / Semester -->
+            <div class="form-group">
+              <label class="form-label" for="profileYearInput" data-i18n="lbl_year">Current Year / Semester</label>
+              <input type="text" id="profileYearInput" class="input-box" required>
+            </div>
+
+            <!-- Monthly Allowance -->
+            <div class="form-group">
+              <label class="form-label" for="profileAllowanceInput" data-i18n="lbl_monthly_allowance">Monthly Allowance</label>
+              <input type="number" id="profileAllowanceInput" class="input-box" min="100" step="100" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnSaveProfile" data-i18n="btn_save_profile">
+              Save Profile Changes
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Localization, Currency & System Controls -->
+        <div class="glass-card" id="profilePreferencesCard">
+          <h3 style="margin-bottom: 16px;">Preferences & Localization</h3>
+
+          <!-- Currency Selector -->
+          <div class="form-group">
+            <label class="form-label" for="profileCurrencySelect" data-i18n="lbl_currency">Currency Symbol</label>
+            <select id="profileCurrencySelect" class="select-box">
+              <option value="₹">₹ (Indian Rupee - INR)</option>
+              <option value="$">$ (US Dollar - USD)</option>
+              <option value="€">€ (Euro - EUR)</option>
+              <option value="£">£ (British Pound - GBP)</option>
+              <option value="¥">¥ (Japanese Yen - JPY)</option>
+            </select>
+          </div>
+
+          <!-- Language Selector Section (7 Languages) -->
+          <div class="form-group">
+            <label class="form-label" for="profileLanguageSelect" data-i18n="lbl_language">Interface Language</label>
+            <select id="profileLanguageSelect" class="select-box">
+              <option value="en">English (Default)</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="es">Español (Spanish)</option>
+              <option value="fr">Français (French)</option>
+              <option value="de">Deutsch (German)</option>
+              <option value="ta">தமிழ் (Tamil)</option>
+              <option value="te">తెలుగు (Telugu)</option>
+            </select>
+          </div>
+
+          <!-- Sound Effects Toggle -->
+          <div class="setting-item-row">
+            <div class="setting-item-info">
+              <h5 data-i18n="lbl_sound_effects">Audio Micro-feedback</h5>
+              <p>Tactile clicks and celebration chimes</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="profileSoundToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Data Management & Backups -->
+          <div style="margin-top: 24px;">
+            <h4 data-i18n="data_mgmt_title" style="margin-bottom: 12px; font-size: 15px;">Data & Backup</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <button class="btn btn-outline" id="btnExportJson" data-i18n="btn_export_json">
+                Backup Data (JSON)
+              </button>
+              <button class="btn btn-outline" id="btnLoadSampleData" data-i18n="btn_import_sample">
+                Load College Sample Data
+              </button>
+              <button class="btn btn-danger-outline" id="btnClearData" data-i18n="btn_clear_data">
+                Reset All Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Logout Button -->
+          <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-subtle);">
+            <button class="btn btn-danger" id="btnLogoutBtn" style="width: 100%;" data-i18n="btn_logout">
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ====================================================================
+       MODALS: EDIT TRANSACTION & CONFIRM LOGOUT
+       ==================================================================== -->
+
+  <!-- Edit Transaction Modal -->
+  <div class="modal-overlay" id="editTransactionModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="btn_edit">Edit Transaction</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="editTransactionForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_expense_name">Expense Details</label>
+            <input type="text" id="editModalTitle" class="input-box" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_amount">Amount</label>
+            <input type="number" id="editModalAmount" class="input-box" step="any" min="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_category">Category</label>
+            <select id="editModalCategory" class="select-box"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_payment_method">Payment Method</label>
+            <select id="editModalPayment" class="select-box">
+              <option value="pay_upi">UPI (GPay / PhonePe / Paytm)</option>
+              <option value="pay_cash">Cash</option>
+              <option value="pay_debit">Debit Card</option>
+              <option value="pay_credit">Credit Card</option>
+              <option value="pay_bank">Net Banking</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_date">Date</label>
+            <input type="datetime-local" id="editModalDate" class="input-box" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_notes">Notes</label>
+            <input type="text" id="editModalNotes" class="input-box">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline btn-modal-cancel" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveEditedTx">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div class="modal-overlay" id="logoutConfirmModal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 data-i18n="logout_modal_title">Confirm Logout</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p data-i18n="logout_modal_msg" style="color: var(--text-muted); font-size: 14px;">
+          Are you sure you want to log out? Your local student session will be safely preserved.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline btn-modal-cancel" data-i18n="btn_cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmLogout" data-i18n="btn_confirm">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lock Screen Overlay -->
+  <div class="lock-screen" id="lockScreenOverlay">
+    <div class="glass-card lock-card">
+      <div class="lock-icon">🔒</div>
+      <h2>Session Locked</h2>
+      <p style="color: var(--text-muted); font-size: 14px; margin: 12px 0 24px;">
+        FinCampus is locked. Tap below to resume your student dashboard.
+      </p>
+      <button class="btn btn-primary" id="btnUnlockSession" style="width: 100%; padding: 14px;">
+        Unlock Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/i18n.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
