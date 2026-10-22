@@ -1,7 +1,7 @@
 // Multi-language translation dictionary for CampusSpend
 const translations = {
   en: {
-    appName: "FinCampus",
+    appName: "Wally",
     tagline: "Smart Financial Compass for College Life",
     nav_dashboard: "Dashboard",
     nav_transactions: "Transactions",
@@ -9,7 +9,7 @@ const translations = {
     nav_analytics: "Analytics",
     nav_budget: "Budget",
     nav_profile: "Profile & Settings",
-    
+
     // Dashboard
     dash_title: "Financial Overview",
     dash_subtitle: "Keep your semester money alive and thriving",
@@ -30,7 +30,7 @@ const translations = {
     spending_calendar: "Spending Calendar",
     view_all_transactions: "View All Transactions",
     no_recent_transactions: "No expenses recorded yet this month.",
-    
+
     // Transactions
     trans_title: "Transaction History",
     trans_subtitle: "Search, filter, update or audit your college expenses",
@@ -59,7 +59,7 @@ const translations = {
     btn_delete: "Delete",
     confirm_delete: "Are you sure you want to delete this transaction?",
     no_transactions_found: "No matching transactions found.",
-    
+
     // Add
     add_title: "Add New Spending",
     add_subtitle: "Log your expense instantly to keep your budget accurate",
@@ -77,7 +77,7 @@ const translations = {
     notes_placeholder: "e.g. Shared with Rahul, assignment printout",
     btn_submit_add: "Add to Transactions",
     success_added: "Transaction recorded successfully!",
-    
+
     // Analytics
     analytics_title: "Financial Analytics",
     analytics_subtitle: "Deep-dive into your spending psychology & trends",
@@ -89,7 +89,7 @@ const translations = {
     weekly_breakdown_title: "Weekly Spending Comparison",
     day_distribution_title: "Spending by Day of Week",
     burn_rate_status: "Student Runway Assessment",
-    
+
     // Budget
     budget_title: "Budget Management",
     budget_subtitle: "Allocate allowances by category & avoid running broke",
@@ -109,7 +109,7 @@ const translations = {
     rule_wants: "30% Wants (Outings, Movies, Snacks)",
     rule_savings: "20% Emergency & Buffer Fund",
     btn_apply_smart: "Apply Smart College Allocation",
-    
+
     // Profile & Settings
     profile_title: "Student Profile & Preferences",
     profile_subtitle: "Customize your account, currencies, and appearance",
@@ -132,7 +132,7 @@ const translations = {
     logout_modal_msg: "Are you sure you want to log out? Your local student session will be safely preserved.",
     btn_cancel: "Cancel",
     btn_confirm: "Log Out",
-    
+
     // Categories
     cat_food: "Food & Canteen",
     cat_transport: "Transport & Fuel",
@@ -145,7 +145,7 @@ const translations = {
     cat_health: "Health & Medical",
     cat_utilities: "Mobile & Subscriptions",
     cat_other: "Other Expenses",
-    
+
     // Payment methods
     pay_upi: "UPI (GPay / PhonePe / Paytm)",
     pay_cash: "Cash",
@@ -153,7 +153,7 @@ const translations = {
     pay_credit: "Credit Card",
     pay_bank: "Net Banking"
   },
-  
+
   hi: {
     appName: "फिनकैंपस",
     tagline: "कॉलेज के लिए स्मार्ट मनी ट्रैकर",
@@ -163,7 +163,7 @@ const translations = {
     nav_analytics: "एनालिटिक्स",
     nav_budget: "बजट",
     nav_profile: "प्रोफाइल और सेटिंग्स",
-    
+
     dash_title: "वित्तीय सारांश",
     dash_subtitle: "महीने के अंत तक अपने पैसे सुरक्षित रखें",
     stat_remaining: "बचे हुए पैसे",
@@ -183,7 +183,7 @@ const translations = {
     spending_calendar: "खर्च कैलेंडर",
     view_all_transactions: "सभी लेन-देन देखें",
     no_recent_transactions: "इस महीने कोई खर्च दर्ज नहीं है।",
-    
+
     trans_title: "लेन-देन का इतिहास",
     trans_subtitle: "कॉलेज खर्च खोजें, फ़िल्टर करें और संशोधित करें",
     search_placeholder: "शीर्षक या विवरण से खोजें...",
@@ -211,7 +211,7 @@ const translations = {
     btn_delete: "हटाएं",
     confirm_delete: "क्या आप वाकई इसे हटाना चाहते हैं?",
     no_transactions_found: "कोई लेन-देन नहीं मिला।",
-    
+
     add_title: "नया खर्च दर्ज करें",
     add_subtitle: "तुरंत विवरण दर्ज करें ताकि बजट सही रहे",
     type_expense: "खर्च",
@@ -228,7 +228,7 @@ const translations = {
     notes_placeholder: "विवरण या दोस्तों के साथ साझा...",
     btn_submit_add: "लेन-देन में जोड़ें",
     success_added: "सफलतापूर्वक जोड़ा गया!",
-    
+
     analytics_title: "वित्तीय विश्लेषण",
     analytics_subtitle: "अपने खर्च करने की आदतों को समझें",
     analytics_total_spent: "महीने का कुल खर्च",
@@ -239,7 +239,7 @@ const translations = {
     weekly_breakdown_title: "साप्ताहिक तुलना",
     day_distribution_title: "सप्ताह के दिनों के अनुसार खर्च",
     burn_rate_status: "छात्र रनवे स्थिति",
-    
+
     budget_title: "बजट प्रबंधन",
     budget_subtitle: "प्रत्येक श्रेणी के लिए सीमा तय करें",
     total_budget_alloc: "कुल आवंटित बजट",
@@ -258,7 +258,7 @@ const translations = {
     rule_wants: "30% इच्छाएं (सिनेमा, मौज-मस्ती, स्नैक्स)",
     rule_savings: "20% आपातकालीन बचत",
     btn_apply_smart: "स्मार्ट बजट लागू करें",
-    
+
     profile_title: "प्रोफ़ाइल और प्राथमिकताएं",
     profile_subtitle: "अपनी जानकारी और भाषा बदलें",
     profile_card_title: "छात्र पहचान",
@@ -280,7 +280,7 @@ const translations = {
     logout_modal_msg: "क्या आप वाकई लॉग आउट करना चाहते हैं?",
     btn_cancel: "रद्द करें",
     btn_confirm: "लॉग आउट",
-    
+
     cat_food: "खाना और कैंटीन",
     cat_transport: "परिवहन और पेट्रोल",
     cat_education: "शिक्षा और फीस",
@@ -292,7 +292,7 @@ const translations = {
     cat_health: "स्वास्थ्य और दवाएं",
     cat_utilities: "मोबाइल और रिचार्ज",
     cat_other: "अन्य खर्च",
-    
+
     pay_upi: "UPI (GPay / PhonePe / Paytm)",
     pay_cash: "नकद (Cash)",
     pay_debit: "डेबिट कार्ड",
@@ -1013,12 +1013,12 @@ function applyTranslations() {
     const key = el.getAttribute('data-i18n');
     el.textContent = getTranslation(key);
   });
-  
+
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
     el.placeholder = getTranslation(key);
   });
-  
+
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.getAttribute('data-i18n-title');
     el.title = getTranslation(key);
