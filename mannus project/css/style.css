@@ -263,11 +263,13 @@ h1, h2, h3, h4, h5, .brand-logo, .stat-value {
 }
 
 .brand-text h1 {
-  font-size: 20px;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--color-warm-white);
+  letter-spacing: -0.02em;
   background: none;
   -webkit-text-fill-color: initial;
-  line-height: 1.1;
+  line-height: 1;
   margin: 0;
   font-family: var(--font-display);
 }
@@ -1357,6 +1359,30 @@ h1, h2, h3, h4, h5, .brand-logo, .stat-value {
   background: var(--color-coral-vermilion);
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(237, 106, 75, 0.35);
+}
+
+.tx-type-toggle #typeIncome:checked + label {
+  background: #10B981;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.preset-buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-submit-income {
+  background: #10B981 !important;
+  border-color: #10B981 !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+}
+
+.btn-submit-income:hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
 }
 
 .amount-hero-input-wrapper {

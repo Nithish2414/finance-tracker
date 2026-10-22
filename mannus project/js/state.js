@@ -12,6 +12,15 @@ const DEFAULT_CATEGORIES = [
   { id: "other", nameKey: "cat_other", icon: "🏷️", color: "#AEC9D5", defaultBudget: 500 }
 ];
 
+const DEFAULT_INCOME_CATEGORIES = [
+  { id: "allowance", nameKey: "cat_inc_allowance", icon: "💰", color: "#10B981" },
+  { id: "freelance", nameKey: "cat_inc_freelance", icon: "💼", color: "#3B82F6" },
+  { id: "scholarship", nameKey: "cat_inc_scholarship", icon: "🎓", color: "#C69A53" },
+  { id: "stipend", nameKey: "cat_inc_stipend", icon: "💵", color: "#8B5CF6" },
+  { id: "gifts", nameKey: "cat_inc_gifts", icon: "🎁", color: "#ED6A4B" },
+  { id: "other_income", nameKey: "cat_inc_other", icon: "🏷️", color: "#6D7B78" }
+];
+
 const DEFAULT_PROFILE = {
   name: "Arjun Sharma",
   email: "arjun.sharma@college.edu",
@@ -161,7 +170,21 @@ class StateManager {
   constructor() {
     this.profile = this.loadProfile();
     this.categories = this.loadCategories();
+    this.incomeCategories = DEFAULT_INCOME_CATEGORIES.map(c => ({ ...c }));
     this.transactions = this.loadTransactions();
+  }
+
+  getCategory(id) {
+    const exp = this.categories.find(c => c.id === id);
+    if (exp) return exp;
+    const inc = this.incomeCategories.find(c => c.id === id);
+    if (inc) return inc;
+    return {
+      id: id || "other",
+      nameKey: "cat_other",
+      icon: "🏷️",
+      color: "#6D7B78"
+    };
   }
 
   loadProfile() {
@@ -301,10 +324,26 @@ class StateManager {
     return expenses.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
   }
 
+  getCurrentMonthIncome() {
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth();
+    return this.transactions.filter(t => {
+      const d = new Date(t.date);
+      return t.type === "income" && d.getFullYear() === curYear && d.getMonth() === curMonth;
+    });
+  }
+
+  getTotalIncomeThisMonth() {
+    const income = this.getCurrentMonthIncome();
+    return income.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  }
+
   getRemainingBudget() {
     const totalAllocated = this.getTotalBudget();
     const spent = this.getTotalSpentThisMonth();
-    return totalAllocated - spent;
+    const income = this.getTotalIncomeThisMonth();
+    return totalAllocated + income - spent;
   }
 
   getDaysInCurrentMonth() {

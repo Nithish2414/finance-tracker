@@ -1,4 +1,4 @@
-# FinCampus 🎓 — Smart College Finance & Expense Tracker
+# Wally 🎓 — Smart College Finance & Expense Tracker
 
 > A bespoke, luxury financial compass engineered specifically for college and university students to track monthly spending, prevent running out of money in the first two weeks, manage category budgets, and build healthy financial habits.
 
@@ -7,7 +7,7 @@
 ## 💡 The Core Problem Solved
 Many college students receive a monthly allowance or pocket money at the start of each month. However, without proactive visibility, up to **70% of the funds are often spent in the first 1-2 weeks** on canteen food, impulse outings, and unplanned purchases. Students then struggle with zero savings for the rest of the semester.
 
-**FinCampus** transforms student financial management through:
+**Wally** transforms student financial management through:
 1. **Pacing Line & Safe Limit Tracking**: A visual comparison of cumulative spending vs. the ideal daily linear allowance curve.
 2. **Campus Runway & Burn Rate Assessment**: Tells students exactly how many days their remaining balance will last at their current rate of spending.
 3. **Smart Warning System**: Automatic warnings when a specific category (e.g. Food, Books) crosses its monthly allocation.
@@ -37,21 +37,18 @@ Many college students receive a monthly allowance or pocket money at the start o
 - **Interactive Actions**: In-line Edit modal to update amounts, merchants, or categories, and Delete action with confirmation.
 - **CSV Export**: One-click export of student records for personal records or parental reporting.
 
-### 3. ➕ Add Spending
-- **Dual Mode**: Toggle between **Expense** and **Income / Allowance**.
-- **Hero Amount Input**: Large, focused input with quick college presets (+₹50 Chai, +₹120 Canteen, +₹250 Transport, +₹500 Books, +₹1,000 Outing).
-- **Visual Category Grid**: Quick-select icon cards for 10 college categories:
-  - 🍜 Food & Canteen
-  - 🚌 Transport & Fuel
-  - 📚 Books & Study Material
-  - 🎬 Entertainment & Outing
-  - 🏠 Accommodation & Rent
-  - 🛒 Groceries & Personal
-  - 🛍️ Shopping & Clothes
-  - 💊 Health & Medical
-  - 📱 Mobile & Subscriptions
-  - 🏷️ Other Expenses
-- **Payment Method & Date Pickers**: Support for UPI (Google Pay / PhonePe / Paytm), Cash, Debit Card, Credit Card, and Net Banking.
+### 3. ➕ Add Amount
+- **Dual Mode**: Seamless toggle between **Expense** and **Income / Allowance** with dynamically tailored content:
+  - **When logging Expense**:
+    - Presets: +₹50 Chai/Snack, +₹120 Canteen, +₹250 Transport, +₹500 Books, +₹1,000 Outing.
+    - Fields: Expense Name / Merchant, Notes.
+    - 10 Expense Categories: 🍜 Food & Canteen, 🚌 Transport & Fuel, 📚 Books & Study Material, 🎬 Entertainment & Outing, 🏠 Accommodation & Rent, 🛒 Groceries & Personal, 🛍️ Shopping & Clothes, 💊 Health & Medical, 📱 Mobile & Subscriptions, 🏷️ Other Expenses.
+    - Payment Methods: UPI, Cash, Debit Card, Credit Card, Net Banking.
+  - **When logging Income / Allowance**:
+    - Presets: +₹500 Gift/Reward, +₹1,000 Freelance/Gig, +₹2,000 Pocket Money, +₹5,000 Monthly Allowance, +₹10,000 Semester Grant.
+    - Fields: Income Source / Description, Deposit Channel, Notes.
+    - 6 Income Categories: 💰 Monthly Allowance, 💼 Freelance & Gigs, 🎓 Scholarship & Grants, 💵 Internship & Stipend, 🎁 Gifts & Rewards, 🏷️ Other Income.
+    - Deposit Channels: UPI, Direct Bank Transfer / Net Banking, Cash in Hand, Cheque / College Account.
 
 ### 4. 📈 Analytics
 - **Summary Metrics**: Total month spending, daily average burn rate, top spending category, and largest single expense.

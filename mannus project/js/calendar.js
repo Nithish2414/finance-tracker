@@ -172,11 +172,7 @@ class CalendarManager {
 
     let itemsHtml = dayData.items
       .map(item => {
-        const cat = store.categories.find(c => c.id === item.category) || {
-          icon: "🏷️",
-          nameKey: "cat_other",
-          color: "#6D7B78"
-        };
+        const cat = store.getCategory(item.category);
         return `
           <div class="day-item-row">
             <span class="day-item-icon" style="background: ${cat.color}22; color: ${cat.color};">${cat.icon}</span>

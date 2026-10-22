@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinCampus - Smart College Student Finance & Expense Tracker</title>
+  <title>Wally - Smart College Student Finance & Expense Tracker</title>
   <!-- Google Fonts: DM Sans & Fraunces -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,13 +23,8 @@
     <div class="nav-container">
       <!-- Brand Logo & Identity -->
       <div class="brand-section" id="navBrandLogo" onclick="app.switchSlide('dashboard')">
-        <div class="brand-gem" id="brandLogoIcon">p</div>
         <div class="brand-text">
-          <div class="brand-title-row">
-            <h1 data-i18n="appName">Wally</h1>
-            <span class="pro-badge">PRO</span>
-          </div>
-          <span class="brand-tagline" data-i18n="tagline">Smart Financial Compass for College Life</span>
+          <h1 data-i18n="appName">Wally</h1>
         </div>
       </div>
 
@@ -43,9 +38,9 @@
           <span class="nav-icon">≡</span>
           <span class="nav-text" data-i18n="nav_transactions">Transactions</span>
         </button>
-        <button class="nav-btn" data-slide="add" id="navBtnAdd" title="Add Expense">
+        <button class="nav-btn" data-slide="add" id="navBtnAdd" title="Add Amount">
           <span class="nav-icon">+</span>
-          <span class="nav-text" data-i18n="nav_add">Add Expense</span>
+          <span class="nav-text" data-i18n="nav_add">Add Amount</span>
         </button>
         <button class="nav-btn" data-slide="analytics" id="navBtnAnalytics" title="Analytics">
           <span class="nav-icon">◒</span>
@@ -89,7 +84,7 @@
         </div>
         <div class="header-actions">
           <button class="btn btn-primary btn-quick-add" id="btnQuickAddFromDash">
-            <span data-i18n="btn_add_new">Add Expense</span>
+            <span data-i18n="btn_add_new">+ Add Amount</span>
           </button>
         </div>
       </div>
@@ -242,7 +237,7 @@
             <span>📥</span> <span data-i18n="btn_export_csv">Export CSV</span>
           </button>
           <button class="btn btn-primary btn-quick-add" id="btnAddFromTransactions">
-            <span data-i18n="btn_add_new">＋ Add Expense</span>
+            <span data-i18n="btn_add_new">+ Add Amount</span>
           </button>
         </div>
       </div>
@@ -313,13 +308,13 @@
 
 
     <!-- ====================================================================
-         SLIDE 3: ADD EXPENSE / INCOME
+         SLIDE 3: ADD AMOUNT (EXPENSE / INCOME)
          ==================================================================== -->
     <section class="slide-section" id="slide-add">
       <div class="section-header-bar">
         <div class="title-group">
-          <h2 data-i18n="add_title">Add New Spending</h2>
-          <p data-i18n="add_subtitle">Log your expense instantly to keep your budget accurate</p>
+          <h2 id="addSlideTitle" data-i18n="add_title">Add Amount</h2>
+          <p id="addSlideSubtitle" data-i18n="add_subtitle_expense">Log your expense instantly to keep your budget accurate</p>
         </div>
       </div>
 
@@ -348,18 +343,16 @@
           </div>
 
           <!-- Quick Preset Amount Buttons for College Life -->
-          <div class="preset-buttons-row">
+          <div class="preset-buttons-row" id="addPresetButtonsRow">
             <span class="stat-footer-text" data-i18n="quick_presets">Quick Presets:</span>
-            <button type="button" class="preset-amount-btn" data-preset="50">+50 Chai/Snack</button>
-            <button type="button" class="preset-amount-btn" data-preset="120">+120 Canteen</button>
-            <button type="button" class="preset-amount-btn" data-preset="250">+250 Transport</button>
-            <button type="button" class="preset-amount-btn" data-preset="500">+500 Books/Pass</button>
-            <button type="button" class="preset-amount-btn" data-preset="1000">+1,000 Outing</button>
+            <div class="preset-buttons-group" id="presetButtonsGroup">
+              <!-- Dynamically populated based on Expense vs Income -->
+            </div>
           </div>
 
-          <!-- Expense Name / Title Input Area -->
+          <!-- Expense / Income Name / Title Input Area -->
           <div class="form-group">
-            <label class="form-label" for="addTitleInput" data-i18n="lbl_expense_name">Expense Name / Merchant</label>
+            <label class="form-label" for="addTitleInput" id="lblAddTitle" data-i18n="lbl_expense_name">Expense Name / Merchant</label>
             <input type="text" id="addTitleInput" class="input-box"
               placeholder="e.g. Canteen lunch, Metro pass, Xerox copies" required
               data-i18n-placeholder="expense_name_placeholder">
@@ -367,22 +360,18 @@
 
           <!-- Category Choosing Area (Visual Cards) -->
           <div class="form-group">
-            <label class="form-label" data-i18n="lbl_category">Category</label>
+            <label class="form-label" id="lblAddCategory" data-i18n="lbl_expense_category">Category</label>
             <div class="category-choice-grid" id="addCategoryGrid">
-              <!-- Rendered dynamically with 10 categories -->
+              <!-- Rendered dynamically with 10 expense categories or 6 income categories -->
             </div>
           </div>
 
-          <!-- 2-Column: Payment Method & Date -->
+          <!-- 2-Column: Payment / Deposit Method & Date -->
           <div class="form-group-grid-2">
             <div class="form-group">
-              <label class="form-label" for="addPaymentInput" data-i18n="lbl_payment_method">Payment Method</label>
+              <label class="form-label" for="addPaymentInput" id="lblAddPayment" data-i18n="lbl_payment_method_expense">Payment Method</label>
               <select id="addPaymentInput" class="select-box">
-                <option value="pay_upi">UPI (GPay / PhonePe / Paytm)</option>
-                <option value="pay_cash">Cash</option>
-                <option value="pay_debit">Debit Card</option>
-                <option value="pay_credit">Credit Card</option>
-                <option value="pay_bank">Net Banking</option>
+                <!-- Populated dynamically based on Expense vs Income -->
               </select>
             </div>
 
@@ -394,15 +383,15 @@
 
           <!-- Optional Notes / Tag -->
           <div class="form-group">
-            <label class="form-label" for="addNotesInput" data-i18n="lbl_notes">Notes (Optional)</label>
+            <label class="form-label" for="addNotesInput" id="lblAddNotes" data-i18n="lbl_notes">Notes (Optional)</label>
             <input type="text" id="addNotesInput" class="input-box"
-              placeholder="e.g. Shared with Rahul, assignment printout" data-i18n-placeholder="notes_placeholder">
+              placeholder="e.g. Shared with Rahul, assignment printout" data-i18n-placeholder="notes_placeholder_expense">
           </div>
 
           <!-- Submit Action Button -->
           <button type="submit" class="btn btn-primary" id="btnAddExpenseSubmit"
             style="width: 100%; padding: 16px; font-size: 16px;">
-            <span>＋</span> <span data-i18n="btn_submit_add">Add to Transactions</span>
+            <span>＋</span> <span id="btnAddSubmitText" data-i18n="btn_submit_expense">Add Expense</span>
           </button>
         </form>
       </div>

@@ -319,11 +319,7 @@ class App {
 
     let html = "";
     recents.forEach(tx => {
-      const cat = store.categories.find(c => c.id === tx.category) || {
-        icon: "🏷️",
-        nameKey: "cat_other",
-        color: "#6D7B78"
-      };
+      const cat = store.getCategory(tx.category);
       const formattedDate = new Date(tx.date).toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
@@ -487,11 +483,7 @@ class App {
 
     let html = "";
     items.forEach(tx => {
-      const cat = store.categories.find(c => c.id === tx.category) || {
-        icon: "🏷️",
-        nameKey: "cat_other",
-        color: "#6D7B78"
-      };
+      const cat = store.getCategory(tx.category);
       const formattedDate = new Date(tx.date).toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
@@ -581,52 +573,195 @@ class App {
     this.showToast("CSV Exported successfully!");
   }
 
-  // --- 3. Add Expense / Income View ---
-  renderCategorySelectors() {
-    // Populate Category Dropdowns & Add Screen Cards
+  // --- 3. Add Amount (Expense / Income) View ---
+  renderCategoryGrid(type = "expense") {
     const addCatContainer = document.getElementById("addCategoryGrid");
+    if (!addCatContainer) return;
+
+    const isIncome = type === "income";
+    const list = isIncome ? store.incomeCategories : store.categories;
+
+    let gridHtml = "";
+    list.forEach((cat, index) => {
+      gridHtml += `
+        <div class="category-choice-card ${index === 0 ? 'selected' : ''}" data-cat-id="${cat.id}">
+          <div class="cat-choice-icon" style="background: ${cat.color}22; color: ${cat.color};">${cat.icon}</div>
+          <span class="cat-choice-label">${getTranslation(cat.nameKey)}</span>
+        </div>
+      `;
+    });
+    addCatContainer.innerHTML = gridHtml;
+
+    addCatContainer.querySelectorAll(".category-choice-card").forEach(card => {
+      card.addEventListener("click", () => {
+        addCatContainer.querySelectorAll(".category-choice-card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        this.playHapticSound("click");
+      });
+    });
+  }
+
+  renderPresetButtons(type = "expense") {
+    const container = document.getElementById("presetButtonsGroup");
+    const amountInput = document.getElementById("addAmountInput");
+    if (!container) return;
+
+    const isIncome = type === "income";
+    const presets = isIncome
+      ? [
+          { val: 500, label: "+500 Gift/Reward" },
+          { val: 1000, label: "+1,000 Freelance/Gig" },
+          { val: 2000, label: "+2,000 Pocket Money" },
+          { val: 5000, label: "+5,000 Monthly Allowance" },
+          { val: 10000, label: "+10,000 Semester Grant" }
+        ]
+      : [
+          { val: 50, label: "+50 Chai/Snack" },
+          { val: 120, label: "+120 Canteen" },
+          { val: 250, label: "+250 Transport" },
+          { val: 500, label: "+500 Books/Pass" },
+          { val: 1000, label: "+1,000 Outing" }
+        ];
+
+    container.innerHTML = presets
+      .map(p => `<button type="button" class="preset-amount-btn" data-preset="${p.val}">${p.label}</button>`)
+      .join("");
+
+    container.querySelectorAll(".preset-amount-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.getAttribute("data-preset");
+        if (amountInput && val) {
+          amountInput.value = val;
+          this.playHapticSound("click");
+          amountInput.focus();
+        }
+      });
+    });
+  }
+
+  updateAddFormType(type = "expense") {
+    const isIncome = type === "income";
+
+    // 1. Subtitle
+    const subtitleEl = document.getElementById("addSlideSubtitle");
+    if (subtitleEl) {
+      const key = isIncome ? "add_subtitle_income" : "add_subtitle_expense";
+      subtitleEl.setAttribute("data-i18n", key);
+      subtitleEl.textContent = getTranslation(key);
+    }
+
+    // 2. Title Label & Placeholder
+    const lblTitle = document.getElementById("lblAddTitle");
+    const titleInput = document.getElementById("addTitleInput");
+    if (lblTitle) {
+      const key = isIncome ? "lbl_income_name" : "lbl_expense_name";
+      lblTitle.setAttribute("data-i18n", key);
+      lblTitle.textContent = getTranslation(key);
+    }
+    if (titleInput) {
+      const key = isIncome ? "income_name_placeholder" : "expense_name_placeholder";
+      titleInput.setAttribute("data-i18n-placeholder", key);
+      titleInput.placeholder = getTranslation(key);
+    }
+
+    // 3. Category Label & Grid
+    const lblCat = document.getElementById("lblAddCategory");
+    if (lblCat) {
+      const key = isIncome ? "lbl_income_category" : "lbl_expense_category";
+      lblCat.setAttribute("data-i18n", key);
+      lblCat.textContent = getTranslation(key);
+    }
+    this.renderCategoryGrid(type);
+
+    // 4. Quick Presets
+    this.renderPresetButtons(type);
+
+    // 5. Payment / Deposit Method
+    const lblPay = document.getElementById("lblAddPayment");
+    const paySelect = document.getElementById("addPaymentInput");
+    if (lblPay) {
+      const key = isIncome ? "lbl_payment_method_income" : "lbl_payment_method_expense";
+      lblPay.setAttribute("data-i18n", key);
+      lblPay.textContent = getTranslation(key);
+    }
+    if (paySelect) {
+      if (isIncome) {
+        paySelect.innerHTML = `
+          <option value="pay_upi">${getTranslation("pay_upi")}</option>
+          <option value="pay_bank">${getTranslation("pay_bank")}</option>
+          <option value="pay_cash">${getTranslation("pay_cash")}</option>
+          <option value="pay_cheque">${getTranslation("pay_cheque")}</option>
+        `;
+      } else {
+        paySelect.innerHTML = `
+          <option value="pay_upi">${getTranslation("pay_upi")}</option>
+          <option value="pay_cash">${getTranslation("pay_cash")}</option>
+          <option value="pay_debit">${getTranslation("pay_debit")}</option>
+          <option value="pay_credit">${getTranslation("pay_credit")}</option>
+          <option value="pay_bank">${getTranslation("pay_bank")}</option>
+        `;
+      }
+    }
+
+    // 6. Notes Placeholder
+    const notesInput = document.getElementById("addNotesInput");
+    if (notesInput) {
+      const key = isIncome ? "notes_placeholder_income" : "notes_placeholder_expense";
+      notesInput.setAttribute("data-i18n-placeholder", key);
+      notesInput.placeholder = getTranslation(key);
+    }
+
+    // 7. Submit Button
+    const submitBtn = document.getElementById("btnAddExpenseSubmit");
+    const submitText = document.getElementById("btnAddSubmitText");
+    if (submitText) {
+      const key = isIncome ? "btn_submit_income" : "btn_submit_expense";
+      submitText.setAttribute("data-i18n", key);
+      submitText.textContent = getTranslation(key);
+    }
+    if (submitBtn) {
+      if (isIncome) {
+        submitBtn.classList.add("btn-submit-income");
+      } else {
+        submitBtn.classList.remove("btn-submit-income");
+      }
+    }
+  }
+
+  renderCategorySelectors() {
     const filterCatSelect = document.getElementById("txFilterCategory");
     const modalCatSelect = document.getElementById("editModalCategory");
 
-    if (addCatContainer) {
-      let gridHtml = "";
-      store.categories.forEach((cat, index) => {
-        gridHtml += `
-          <div class="category-choice-card ${index === 0 ? 'selected' : ''}" data-cat-id="${cat.id}">
-            <div class="cat-choice-icon" style="background: ${cat.color}22; color: ${cat.color};">${cat.icon}</div>
-            <span class="cat-choice-label">${getTranslation(cat.nameKey)}</span>
-          </div>
-        `;
-      });
-      addCatContainer.innerHTML = gridHtml;
-
-      // Add click listener
-      addCatContainer.querySelectorAll(".category-choice-card").forEach(card => {
-        card.addEventListener("click", () => {
-          addCatContainer.querySelectorAll(".category-choice-card").forEach(c => c.classList.remove("selected"));
-          card.classList.add("selected");
-          this.playHapticSound("click");
-        });
-      });
-    }
+    const typeEl = document.querySelector('input[name="transactionType"]:checked');
+    const curType = typeEl ? typeEl.value : "expense";
+    this.updateAddFormType(curType);
 
     // Populate transaction filter category select
     if (filterCatSelect) {
-      filterCatSelect.innerHTML = `<option value="all">${getTranslation("filter_all_categories")}</option>` +
-        store.categories.map(c => `<option value="${c.id}">${c.icon} ${getTranslation(c.nameKey)}</option>`).join("");
+      let optHtml = `<option value="all">${getTranslation("filter_all_categories")}</option>`;
+      optHtml += `<optgroup label="Expenses">`;
+      optHtml += store.categories.map(c => `<option value="${c.id}">${c.icon} ${getTranslation(c.nameKey)}</option>`).join("");
+      optHtml += `</optgroup><optgroup label="Income / Allowance">`;
+      optHtml += store.incomeCategories.map(c => `<option value="${c.id}">${c.icon} ${getTranslation(c.nameKey)}</option>`).join("");
+      optHtml += `</optgroup>`;
+      filterCatSelect.innerHTML = optHtml;
     }
 
     if (modalCatSelect) {
-      modalCatSelect.innerHTML = store.categories
-        .map(c => `<option value="${c.id}">${c.icon} ${getTranslation(c.nameKey)}</option>`).join("");
+      let optHtml = `<optgroup label="Expenses">`;
+      optHtml += store.categories.map(c => `<option value="${c.id}">${c.icon} ${getTranslation(c.nameKey)}</option>`).join("");
+      optHtml += `</optgroup><optgroup label="Income / Allowance">`;
+      optHtml += store.incomeCategories.map(c => `<option value="${c.id}">${c.icon} ${getTranslation(c.nameKey)}</option>`).join("");
+      optHtml += `</optgroup>`;
+      modalCatSelect.innerHTML = optHtml;
     }
   }
 
   bindAddForm() {
     const form = document.getElementById("addExpenseForm");
-    const presetBtns = document.querySelectorAll(".preset-amount-btn");
     const amountInput = document.getElementById("addAmountInput");
     const dateInput = document.getElementById("addDateInput");
+    const typeRadios = document.querySelectorAll('input[name="transactionType"]');
 
     // Default date to now
     if (dateInput) {
@@ -635,15 +770,11 @@ class App {
       dateInput.value = now.toISOString().slice(0, 16);
     }
 
-    // Preset amount shortcuts
-    presetBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const val = btn.getAttribute("data-preset");
-        if (amountInput && val) {
-          amountInput.value = val;
-          this.playHapticSound("click");
-          amountInput.focus();
-        }
+    // Toggle between Expense and Income / Allowance
+    typeRadios.forEach(radio => {
+      radio.addEventListener("change", e => {
+        this.updateAddFormType(e.target.value);
+        this.playHapticSound("click");
       });
     });
 
@@ -660,7 +791,8 @@ class App {
         const type = typeEl ? typeEl.value : "expense";
 
         const selectedCard = document.querySelector("#addCategoryGrid .category-choice-card.selected");
-        const category = selectedCard ? selectedCard.getAttribute("data-cat-id") : "food";
+        const defaultCat = type === "income" ? "allowance" : "food";
+        const category = selectedCard ? selectedCard.getAttribute("data-cat-id") : defaultCat;
 
         if (!amount || amount <= 0) {
           alert("Please enter a valid amount greater than 0");
@@ -668,7 +800,7 @@ class App {
         }
 
         if (!title.trim()) {
-          alert("Please enter the name of the expense or merchant");
+          alert(type === "income" ? "Please enter the source of income" : "Please enter the name of the expense or merchant");
           return;
         }
 
@@ -691,6 +823,11 @@ class App {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         dateInput.value = now.toISOString().slice(0, 16);
+
+        // Reset toggle to expense
+        const expRadio = document.getElementById("typeExpense");
+        if (expRadio) expRadio.checked = true;
+        this.updateAddFormType("expense");
 
         // Refresh views and switch to dashboard
         this.renderAll();
