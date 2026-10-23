@@ -236,8 +236,8 @@ class ChartManager {
     }
 
     // Color bars: High -> Coral Vermilion, Moderate -> Brass Gold, Normal -> Sage Green
-    const avg = store.getDailyAverageSpent();
-    const barColors = values.map(v => (v > avg * 1.5 ? "#ED6A4B" : v > avg ? "#C69A53" : "#A5C4AE"));
+    const safeDaily = store.getSafeDailyLimit() || store.getDailyAverageSpent();
+    const barColors = values.map(v => (v > safeDaily * 1.25 ? "#ED6A4B" : v > safeDaily ? "#C69A53" : "#A5C4AE"));
 
     this.dailyTrendChart = new Chart(ctx, {
       type: "bar",
@@ -267,7 +267,12 @@ class ChartManager {
             titleFont: { family: "'DM Sans', sans-serif" },
             bodyFont: { family: "'DM Sans', sans-serif" },
             callbacks: {
-              label: ctx => `Spend: ${store.getCurrency()} ${Number(ctx.raw).toLocaleString()}`
+              label: ctx => {
+                const val = Number(ctx.raw) || 0;
+                const diff = val - safeDaily;
+                const tag = diff > 0 ? ` (+${store.getCurrency()} ${diff.toLocaleString()} over safe limit)` : " (Within safe target)";
+                return `Spend: ${store.getCurrency()} ${val.toLocaleString()}${tag}`;
+              }
             }
           }
         },

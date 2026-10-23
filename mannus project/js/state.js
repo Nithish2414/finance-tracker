@@ -1,15 +1,15 @@
-// Central State Management for CampusSpend
+// Central State Management for CampusSpend & Wally
 const DEFAULT_CATEGORIES = [
-  { id: "food", nameKey: "cat_food", icon: "🍜", color: "#ED6A4B", defaultBudget: 3500 },
-  { id: "transport", nameKey: "cat_transport", icon: "🚌", color: "#AEC9D5", defaultBudget: 1200 },
-  { id: "books", nameKey: "cat_books", icon: "📚", color: "#C69A53", defaultBudget: 1000 },
-  { id: "entertainment", nameKey: "cat_entertainment", icon: "🎬", color: "#263A41", defaultBudget: 1500 },
-  { id: "accommodation", nameKey: "cat_accommodation", icon: "🏠", color: "#13252D", defaultBudget: 4000 },
-  { id: "groceries", nameKey: "cat_groceries", icon: "🛒", color: "#A5C4AE", defaultBudget: 1200 },
-  { id: "shopping", nameKey: "cat_shopping", icon: "🛍️", color: "#C69A53", defaultBudget: 1000 },
-  { id: "health", nameKey: "cat_health", icon: "💊", color: "#ED6A4B", defaultBudget: 600 },
-  { id: "utilities", nameKey: "cat_utilities", icon: "📱", color: "#6D7B78", defaultBudget: 500 },
-  { id: "other", nameKey: "cat_other", icon: "🏷️", color: "#AEC9D5", defaultBudget: 500 }
+  { id: "food", nameKey: "cat_food", icon: "🍜", color: "#ED6A4B", defaultBudget: 0 },
+  { id: "transport", nameKey: "cat_transport", icon: "🚌", color: "#AEC9D5", defaultBudget: 0 },
+  { id: "books", nameKey: "cat_books", icon: "📚", color: "#C69A53", defaultBudget: 0 },
+  { id: "entertainment", nameKey: "cat_entertainment", icon: "🎬", color: "#263A41", defaultBudget: 0 },
+  { id: "accommodation", nameKey: "cat_accommodation", icon: "🏠", color: "#13252D", defaultBudget: 0 },
+  { id: "groceries", nameKey: "cat_groceries", icon: "🛒", color: "#A5C4AE", defaultBudget: 0 },
+  { id: "shopping", nameKey: "cat_shopping", icon: "🛍️", color: "#C69A53", defaultBudget: 0 },
+  { id: "health", nameKey: "cat_health", icon: "💊", color: "#ED6A4B", defaultBudget: 0 },
+  { id: "utilities", nameKey: "cat_utilities", icon: "📱", color: "#6D7B78", defaultBudget: 0 },
+  { id: "other", nameKey: "cat_other", icon: "🏷️", color: "#AEC9D5", defaultBudget: 0 }
 ];
 
 const DEFAULT_INCOME_CATEGORIES = [
@@ -22,152 +22,182 @@ const DEFAULT_INCOME_CATEGORIES = [
 ];
 
 const DEFAULT_PROFILE = {
-  name: "Arjun Sharma",
-  email: "arjun.sharma@college.edu",
-  university: "National Institute of Technology",
-  year: "3rd Year (Semester 5)",
-  monthlyAllowance: 15000,
+  name: "Student",
+  email: "student@college.edu",
+  university: "University / College",
+  year: "1st Year",
+  monthlyAllowance: 0,
   currency: "₹",
   soundEnabled: true,
   avatar: "🎓"
 };
 
-// Realistic college student sample transactions
-const SAMPLE_TRANSACTIONS = [
-  {
-    id: "tx-1",
-    title: "Campus Canteen - Dosa & Chai",
-    amount: 140,
-    category: "food",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), // 4 hrs ago
-    notes: "Breakfast with Rohan before lecture",
-    type: "expense"
-  },
-  {
-    id: "tx-2",
-    title: "Metro Smart Card Recharge",
-    amount: 500,
-    category: "transport",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 28).toISOString(), // Yesterday
-    notes: "Monthly student transit pass",
-    type: "expense"
-  },
-  {
-    id: "tx-3",
-    title: "Data Structures & Algorithms Book",
-    amount: 720,
-    category: "books",
-    paymentMethod: "pay_debit",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 52).toISOString(), // 2 days ago
-    notes: "Core reference book recommended by prof",
-    type: "expense"
-  },
-  {
-    id: "tx-4",
-    title: "Weekend Movie & Popcorn with Roommates",
-    amount: 650,
-    category: "entertainment",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 76).toISOString(), // 3 days ago
-    notes: "IMAX evening show",
-    type: "expense"
-  },
-  {
-    id: "tx-5",
-    title: "Hostel Mess Advance / Share",
-    amount: 2800,
-    category: "food",
-    paymentMethod: "pay_bank",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 120).toISOString(), // 5 days ago
-    notes: "Monthly lunch & dinner subscription",
-    type: "expense"
-  },
-  {
-    id: "tx-6",
-    title: "Campus Xerox & Project Spiral Binding",
-    amount: 180,
-    category: "books",
-    paymentMethod: "pay_cash",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 140).toISOString(),
-    notes: "OS and Networks lab manual copies",
-    type: "expense"
-  },
-  {
-    id: "tx-7",
-    title: "Hostel Essentials & Toothpaste/Soap",
-    amount: 320,
-    category: "groceries",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 170).toISOString(),
-    notes: "Supermarket run",
-    type: "expense"
-  },
-  {
-    id: "tx-8",
-    title: "Campus Cafe Cappuccino & Sandwich",
-    amount: 220,
-    category: "food",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 200).toISOString(),
-    notes: "Study session break",
-    type: "expense"
-  },
-  {
-    id: "tx-9",
-    title: "Hostel Room Electric Kettle Share",
-    amount: 450,
-    category: "accommodation",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 240).toISOString(),
-    notes: "Winter hot water & Maggi share",
-    type: "expense"
-  },
-  {
-    id: "tx-10",
-    title: "Auto Rickshaw from Station",
-    amount: 120,
-    category: "transport",
-    paymentMethod: "pay_cash",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 280).toISOString(),
-    notes: "Rainy evening ride back to hostel",
-    type: "expense"
-  },
-  {
-    id: "tx-11",
-    title: "Monthly 5G Data Pack Recharge",
-    amount: 299,
-    category: "utilities",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 320).toISOString(),
-    notes: "Unlimited 5G campus hotspot",
-    type: "expense"
-  },
-  {
-    id: "tx-12",
-    title: "Mid-Term Project Stationery & Pen Set",
-    amount: 210,
-    category: "books",
-    paymentMethod: "pay_cash",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 360).toISOString(),
-    notes: "Highlighters and draft sheets",
-    type: "expense"
-  },
-  {
-    id: "tx-13",
-    title: "Late Night Pizza Celebration",
-    amount: 680,
-    category: "food",
-    paymentMethod: "pay_upi",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 400).toISOString(),
-    notes: "After winning College Hackathon round!",
-    type: "expense"
-  }
-];
+// Generates dynamic realistic college student sample transactions anchored to the current active month (only when user clicks 'Load Sample Data')
+function getRealisticSampleTransactions() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const curDay = now.getDate();
+
+  const makeDate = (daysAgo, hour = 14, min = 30) => {
+    const day = Math.max(1, curDay - daysAgo);
+    return new Date(year, month, day, hour, min).toISOString();
+  };
+
+  return [
+    {
+      id: "tx-inc-1",
+      title: "Monthly Pocket Money / Allowance",
+      amount: 15000,
+      category: "allowance",
+      paymentMethod: "pay_bank",
+      date: new Date(year, month, 1, 10, 0).toISOString(),
+      notes: "Allowance received from parents",
+      type: "income"
+    },
+    {
+      id: "tx-1",
+      title: "Campus Canteen - Dosa & Chai",
+      amount: 140,
+      category: "food",
+      paymentMethod: "pay_upi",
+      date: makeDate(0, 9, 30), // Today morning
+      notes: "Breakfast before lecture",
+      type: "expense"
+    },
+    {
+      id: "tx-2",
+      title: "Metro Smart Card Recharge",
+      amount: 500,
+      category: "transport",
+      paymentMethod: "pay_upi",
+      date: makeDate(1, 8, 15), // Yesterday
+      notes: "Monthly student transit pass",
+      type: "expense"
+    },
+    {
+      id: "tx-3",
+      title: "Data Structures & Algorithms Book",
+      amount: 720,
+      category: "books",
+      paymentMethod: "pay_debit",
+      date: makeDate(2, 16, 45), // 2 days ago
+      notes: "Core reference book recommended by prof",
+      type: "expense"
+    },
+    {
+      id: "tx-4",
+      title: "Weekend Movie & Popcorn with Friends",
+      amount: 650,
+      category: "entertainment",
+      paymentMethod: "pay_upi",
+      date: makeDate(3, 19, 30),
+      notes: "Evening cinema outing",
+      type: "expense"
+    },
+    {
+      id: "tx-5",
+      title: "Hostel Mess Advance / Share",
+      amount: 2800,
+      category: "food",
+      paymentMethod: "pay_bank",
+      date: makeDate(Math.min(curDay - 1, 5), 11, 0),
+      notes: "Monthly meal subscription",
+      type: "expense"
+    },
+    {
+      id: "tx-6",
+      title: "Campus Xerox & Project Printing",
+      amount: 180,
+      category: "books",
+      paymentMethod: "pay_cash",
+      date: makeDate(Math.min(curDay - 1, 6), 15, 20),
+      notes: "Lab manual copies",
+      type: "expense"
+    },
+    {
+      id: "tx-7",
+      title: "Hostel Essentials & Groceries",
+      amount: 320,
+      category: "groceries",
+      paymentMethod: "pay_upi",
+      date: makeDate(Math.min(curDay - 1, 8), 18, 10),
+      notes: "Supermarket run",
+      type: "expense"
+    },
+    {
+      id: "tx-8",
+      title: "Campus Cafe Coffee & Snack",
+      amount: 220,
+      category: "food",
+      paymentMethod: "pay_upi",
+      date: makeDate(Math.min(curDay - 1, 10), 17, 45),
+      notes: "Study session break",
+      type: "expense"
+    },
+    {
+      id: "tx-9",
+      title: "Hostel Room Appliance Share",
+      amount: 450,
+      category: "accommodation",
+      paymentMethod: "pay_upi",
+      date: makeDate(Math.min(curDay - 1, 12), 20, 0),
+      notes: "Room utilities share",
+      type: "expense"
+    },
+    {
+      id: "tx-10",
+      title: "Transit Auto Rickshaw",
+      amount: 120,
+      category: "transport",
+      paymentMethod: "pay_cash",
+      date: makeDate(Math.min(curDay - 1, 14), 21, 15),
+      notes: "Ride back to campus",
+      type: "expense"
+    },
+    {
+      id: "tx-11",
+      title: "Monthly 5G Data Pack Recharge",
+      amount: 299,
+      category: "utilities",
+      paymentMethod: "pay_upi",
+      date: makeDate(Math.min(curDay - 1, 16), 10, 30),
+      notes: "Mobile data pack",
+      type: "expense"
+    },
+    {
+      id: "tx-12",
+      title: "Stationery & Pen Set",
+      amount: 210,
+      category: "books",
+      paymentMethod: "pay_cash",
+      date: makeDate(Math.min(curDay - 1, 18), 14, 0),
+      notes: "Draft sheets and pens",
+      type: "expense"
+    },
+    {
+      id: "tx-13",
+      title: "Pizza Celebration with Roommates",
+      amount: 680,
+      category: "food",
+      paymentMethod: "pay_upi",
+      date: makeDate(Math.min(curDay - 1, 20), 22, 10),
+      notes: "Weekend celebration",
+      type: "expense"
+    }
+  ];
+}
 
 class StateManager {
   constructor() {
+    // Clean initial zero reset for fresh user onboarding
+    if (localStorage.getItem("fincampus_clean_zero_v1") !== "true") {
+      localStorage.removeItem("fincampus_transactions");
+      localStorage.removeItem("fincampus_categories");
+      localStorage.removeItem("fincampus_profile");
+      localStorage.setItem("fincampus_clean_zero_v1", "true");
+    }
+
     this.profile = this.loadProfile();
     this.categories = this.loadCategories();
     this.incomeCategories = DEFAULT_INCOME_CATEGORIES.map(c => ({ ...c }));
@@ -208,32 +238,39 @@ class StateManager {
         const parsed = JSON.parse(saved);
         return DEFAULT_CATEGORIES.map(def => {
           const match = parsed.find(p => p.id === def.id);
-          return match ? { ...def, defaultBudget: match.budget ?? def.defaultBudget } : def;
+          return match ? { ...def, defaultBudget: match.budget !== undefined ? Number(match.budget) : 0 } : { ...def, defaultBudget: 0 };
         });
       }
     } catch (e) {}
-    return DEFAULT_CATEGORIES.map(c => ({ ...c }));
+    return DEFAULT_CATEGORIES.map(c => ({ ...c, defaultBudget: 0 }));
   }
 
   saveCategoryBudgets(budgetMap) {
     this.categories = this.categories.map(c => ({
       ...c,
-      defaultBudget: budgetMap[c.id] !== undefined ? Number(budgetMap[c.id]) : c.defaultBudget
+      defaultBudget: budgetMap[c.id] !== undefined ? Math.max(0, Number(budgetMap[c.id])) : c.defaultBudget
     }));
     const toSave = this.categories.map(c => ({ id: c.id, budget: c.defaultBudget }));
     localStorage.setItem("fincampus_categories", JSON.stringify(toSave));
+
+    // Keep monthly allowance in sync with category total if category sum exceeds monthly allowance
+    const totalAlloc = this.getTotalBudget();
+    if (totalAlloc > 0 && (this.profile.monthlyAllowance === 0 || this.profile.monthlyAllowance < totalAlloc)) {
+      this.profile.monthlyAllowance = totalAlloc;
+      this.saveProfile({ monthlyAllowance: totalAlloc });
+    }
   }
 
   loadTransactions() {
     try {
       const saved = localStorage.getItem("fincampus_transactions");
-      if (saved) {
+      if (saved !== null) {
         return JSON.parse(saved);
       }
     } catch (e) {}
-    // Seed initial realistic data
-    this.saveTransactions(SAMPLE_TRANSACTIONS);
-    return [...SAMPLE_TRANSACTIONS];
+    // Clean initial state: zero transactions
+    this.saveTransactions([]);
+    return [];
   }
 
   saveTransactions(txs) {
@@ -263,7 +300,8 @@ class StateManager {
       this.transactions[idx] = {
         ...this.transactions[idx],
         ...updatedFields,
-        amount: parseFloat(updatedFields.amount !== undefined ? updatedFields.amount : this.transactions[idx].amount)
+        amount: parseFloat(updatedFields.amount !== undefined ? updatedFields.amount : this.transactions[idx].amount),
+        type: updatedFields.type || this.transactions[idx].type || "expense"
       };
       this.saveTransactions(this.transactions);
       return this.transactions[idx];
@@ -276,21 +314,48 @@ class StateManager {
     this.saveTransactions(this.transactions);
   }
 
+  // Reload realistic sample data on explicit user request
   resetToSample() {
-    this.transactions = [...SAMPLE_TRANSACTIONS];
+    this.transactions = getRealisticSampleTransactions();
     this.saveTransactions(this.transactions);
-    this.categories = DEFAULT_CATEGORIES.map(c => ({ ...c }));
-    this.saveCategoryBudgets(
-      DEFAULT_CATEGORIES.reduce((acc, c) => ({ ...acc, [c.id]: c.defaultBudget }), {})
-    );
+    this.saveProfile({ monthlyAllowance: 15000 });
+    this.applyPresetBudget("50_30_20");
   }
 
+  // Reset everything back to complete zero
   clearAllData() {
     this.transactions = [];
     this.saveTransactions([]);
+    this.categories = DEFAULT_CATEGORIES.map(c => ({ ...c, defaultBudget: 0 }));
+    this.saveCategoryBudgets(
+      DEFAULT_CATEGORIES.reduce((acc, c) => ({ ...acc, [c.id]: 0 }), {})
+    );
+    this.saveProfile({ monthlyAllowance: 0 });
   }
 
-  // --- Financial Calculations ---
+  importBackupData(backup) {
+    if (!backup || typeof backup !== "object") {
+      throw new Error("Invalid backup JSON format.");
+    }
+    if (backup.profile && typeof backup.profile === "object") {
+      this.saveProfile(backup.profile);
+    }
+    if (Array.isArray(backup.categories)) {
+      const budgetMap = {};
+      backup.categories.forEach(c => {
+        if (c.id && (c.budget !== undefined || c.defaultBudget !== undefined)) {
+          budgetMap[c.id] = c.budget !== undefined ? c.budget : c.defaultBudget;
+        }
+      });
+      this.saveCategoryBudgets(budgetMap);
+    }
+    if (Array.isArray(backup.transactions)) {
+      this.saveTransactions(backup.transactions);
+    }
+    return true;
+  }
+
+  // --- Financial Calculations & Daily Tracking ---
 
   getCurrency() {
     return this.profile.currency || "₹";
@@ -315,15 +380,7 @@ class StateManager {
     });
   }
 
-  getTotalBudget() {
-    return this.categories.reduce((sum, c) => sum + (Number(c.defaultBudget) || 0), 0);
-  }
-
-  getTotalSpentThisMonth() {
-    const expenses = this.getCurrentMonthExpenses();
-    return expenses.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-  }
-
+  // Filters income for current month
   getCurrentMonthIncome() {
     const now = new Date();
     const curYear = now.getFullYear();
@@ -332,6 +389,15 @@ class StateManager {
       const d = new Date(t.date);
       return t.type === "income" && d.getFullYear() === curYear && d.getMonth() === curMonth;
     });
+  }
+
+  getTotalBudget() {
+    return this.categories.reduce((sum, c) => sum + (Number(c.defaultBudget) || 0), 0);
+  }
+
+  getTotalSpentThisMonth() {
+    const expenses = this.getCurrentMonthExpenses();
+    return expenses.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
   }
 
   getTotalIncomeThisMonth() {
@@ -358,7 +424,7 @@ class StateManager {
   getDaysLeftInMonth() {
     const totalDays = this.getDaysInCurrentMonth();
     const curDay = this.getCurrentDayOfMonth();
-    return Math.max(1, totalDays - curDay);
+    return Math.max(1, totalDays - curDay + 1);
   }
 
   getDailyAverageSpent() {
@@ -371,9 +437,133 @@ class StateManager {
   getStudentRunway() {
     const remaining = this.getRemainingBudget();
     const dailyAvg = this.getDailyAverageSpent();
+    const totalBudget = this.getTotalBudget();
+    if (totalBudget === 0) return 0;
     if (remaining <= 0) return 0;
-    if (dailyAvg <= 0) return 99;
+    if (dailyAvg <= 0) return this.getDaysLeftInMonth();
     return Math.round(remaining / dailyAvg);
+  }
+
+  // --- Daily Usage Tracking Methods ---
+
+  getTodayExpenses() {
+    const todayStr = new Date().toDateString();
+    return this.transactions.filter(t => t.type === "expense" && new Date(t.date).toDateString() === todayStr);
+  }
+
+  getTodayTotalSpent() {
+    return this.getTodayExpenses().reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  }
+
+  getYesterdayTotalSpent() {
+    const yest = new Date();
+    yest.setDate(yest.getDate() - 1);
+    const yestStr = yest.toDateString();
+    return this.transactions
+      .filter(t => t.type === "expense" && new Date(t.date).toDateString() === yestStr)
+      .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  }
+
+  getSafeDailyLimit() {
+    const remaining = this.getRemainingBudget();
+    const daysLeft = this.getDaysLeftInMonth();
+    if (remaining <= 0) return 0;
+    return Math.round(remaining / daysLeft);
+  }
+
+  getTodayBurnStatus() {
+    const todaySpent = this.getTodayTotalSpent();
+    const safeDailyLimit = this.getSafeDailyLimit();
+    const remainingToday = Math.max(0, safeDailyLimit - todaySpent);
+    const overSpentToday = Math.max(0, todaySpent - safeDailyLimit);
+    const percentUsed = safeDailyLimit > 0 ? Math.round((todaySpent / safeDailyLimit) * 100) : (todaySpent > 0 ? 100 : 0);
+    const isOverLimit = todaySpent > safeDailyLimit && safeDailyLimit > 0;
+    const isWarning = todaySpent >= safeDailyLimit * 0.8 && !isOverLimit && safeDailyLimit > 0;
+
+    return {
+      todaySpent,
+      safeDailyLimit,
+      remainingToday,
+      overSpentToday,
+      percentUsed,
+      isOverLimit,
+      isWarning
+    };
+  }
+
+  // --- Overall Budget Setting & Presets ---
+
+  setMonthlyBudget(newAllowance, autoDistribute = false) {
+    const amount = Math.max(0, parseFloat(newAllowance) || 0);
+    this.profile.monthlyAllowance = amount;
+    this.saveProfile({ monthlyAllowance: amount });
+
+    // If current category total is 0, auto-distribute across categories
+    const currentTotal = this.getTotalBudget();
+    if ((currentTotal === 0 && amount > 0) || autoDistribute) {
+      this.applyPresetBudget("50_30_20");
+    }
+  }
+
+  applyPresetBudget(presetName = "50_30_20") {
+    const totalAllowance = this.profile.monthlyAllowance || 15000;
+    let ratios = {};
+
+    if (presetName === "50_30_20") {
+      // 50% Needs, 30% Wants, 20% Emergency
+      ratios = {
+        food: 0.25,
+        accommodation: 0.20,
+        transport: 0.08,
+        books: 0.07,
+        entertainment: 0.12,
+        groceries: 0.08,
+        shopping: 0.06,
+        health: 0.04,
+        utilities: 0.05,
+        other: 0.05
+      };
+    } else if (presetName === "frugal") {
+      // Strict / Frugal (65% Survival, 15% Fun, 20% Savings)
+      ratios = {
+        food: 0.28,
+        accommodation: 0.22,
+        transport: 0.07,
+        books: 0.08,
+        entertainment: 0.05,
+        groceries: 0.10,
+        shopping: 0.03,
+        health: 0.05,
+        utilities: 0.04,
+        other: 0.08
+      };
+    } else if (presetName === "balanced") {
+      // Balanced Campus Life
+      ratios = {
+        food: 0.23,
+        accommodation: 0.18,
+        transport: 0.08,
+        books: 0.08,
+        entertainment: 0.15,
+        groceries: 0.08,
+        shopping: 0.08,
+        health: 0.04,
+        utilities: 0.04,
+        other: 0.04
+      };
+    } else if (presetName === "equal") {
+      const share = 1 / this.categories.length;
+      this.categories.forEach(c => { ratios[c.id] = share; });
+    }
+
+    const budgetMap = {};
+    this.categories.forEach(c => {
+      const share = ratios[c.id] || 0.10;
+      budgetMap[c.id] = Math.round(totalAllowance * share);
+    });
+
+    this.saveCategoryBudgets(budgetMap);
+    return budgetMap;
   }
 
   getCategorySpending() {
@@ -394,7 +584,7 @@ class StateManager {
       const spent = spendingMap[cat.id] || 0;
       const budget = Number(cat.defaultBudget) || 0;
       const remaining = budget - spent;
-      const percent = budget > 0 ? (spent / budget) * 100 : 0;
+      const percent = budget > 0 ? (spent / budget) * 100 : (spent > 0 ? 100 : 0);
       const isExceeded = spent > budget && budget > 0;
       const isWarning = percent >= 80 && !isExceeded;
       return {
@@ -413,6 +603,21 @@ class StateManager {
   // Active Warnings System
   getActiveAlerts() {
     const alerts = [];
+    const totalBudget = this.getTotalBudget();
+    const totalSpent = this.getTotalSpentThisMonth();
+
+    // Friendly call-to-action when user has not set budget yet
+    if (totalBudget === 0) {
+      alerts.push({
+        type: "warning",
+        icon: "🎯",
+        actionSlide: "budget",
+        title: "No Budget Configured Yet",
+        message: "Your monthly allowance is currently 0. Click below to set your budget allocations and unlock real-time daily safe spending tracking!"
+      });
+      return alerts;
+    }
+
     const catStats = this.getCategorySpending();
     
     // Check for category over-budget
@@ -440,8 +645,6 @@ class StateManager {
     });
 
     // Check fast pacing / burn rate
-    const totalBudget = this.getTotalBudget();
-    const totalSpent = this.getTotalSpentThisMonth();
     const dayOfMonth = this.getCurrentDayOfMonth();
     const daysInMonth = this.getDaysInCurrentMonth();
     const monthProgressPercent = (dayOfMonth / daysInMonth) * 100;
@@ -453,6 +656,17 @@ class StateManager {
         icon: "🚨",
         title: "High Burn Rate Alert!",
         message: `You have burned ${Math.round(spentPercent)}% of your monthly funds in just ${dayOfMonth} days! At this pace, you may run out of funds in ${this.getStudentRunway()} days.`
+      });
+    }
+
+    // Daily safe limit alert if today exceeds safe burn rate
+    const todayStatus = this.getTodayBurnStatus();
+    if (todayStatus.isOverLimit && todayStatus.todaySpent > 0) {
+      alerts.push({
+        type: "warning",
+        icon: "⚡",
+        title: "Daily Spend Limit Exceeded Today",
+        message: `You spent ${this.formatMoney(todayStatus.todaySpent)} today (+${this.formatMoney(todayStatus.overSpentToday)} above your safe daily target of ${this.formatMoney(todayStatus.safeDailyLimit)}/day).`
       });
     }
 

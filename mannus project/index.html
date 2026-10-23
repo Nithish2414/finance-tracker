@@ -144,6 +144,53 @@
         </div>
       </div>
 
+      <!-- Daily Money Usage Tracker Card -->
+      <div class="glass-card daily-usage-tracker-card" id="cardDailyUsageTracker">
+        <div class="daily-tracker-header">
+          <div class="daily-tracker-title-box">
+            <span class="daily-tracker-icon">⚡</span>
+            <div>
+              <h3 class="daily-tracker-heading">Daily Money Usage Tracker</h3>
+              <p class="stat-footer-text" id="dashTodayDateText">Today's spend vs safe daily allowance</p>
+            </div>
+          </div>
+          <div id="dashTodayStatusBadge">
+            <span class="badge badge-success">On Track Today</span>
+          </div>
+        </div>
+
+        <div class="daily-tracker-metrics-grid">
+          <div class="daily-metric-col">
+            <span class="daily-metric-label">Spent Today</span>
+            <div class="daily-metric-val" id="dashTodaySpentVal">₹ 0</div>
+            <span class="daily-metric-sub" id="dashTodayTxCount">0 expenses logged today</span>
+          </div>
+
+          <div class="daily-metric-col highlight">
+            <span class="daily-metric-label">Safe Daily Target</span>
+            <div class="daily-metric-val" id="dashTodaySafeLimitVal">₹ 0</div>
+            <span class="daily-metric-sub" id="dashTodayDaysLeft">based on remaining days</span>
+          </div>
+
+          <div class="daily-metric-col">
+            <span class="daily-metric-label">Yesterday's Spend</span>
+            <div class="daily-metric-val" id="dashYesterdaySpentVal">₹ 0</div>
+            <span class="daily-metric-sub">Previous day baseline</span>
+          </div>
+
+          <div class="daily-metric-col">
+            <span class="daily-metric-label">Today's Remaining Buffer</span>
+            <div class="daily-metric-val text-success" id="dashTodayBufferVal">₹ 0</div>
+            <span class="daily-metric-sub" id="dashTodayBufferDesc">Safe to spend today</span>
+          </div>
+        </div>
+
+        <!-- Today's Safe Burn Meter -->
+        <div class="daily-meter-track">
+          <div class="daily-meter-fill progress-success" id="dashTodayMeterFill" style="width: 0%;"></div>
+        </div>
+      </div>
+
       <!-- Warning System & Active Alert Hub -->
       <div class="alert-hub" id="dashboardAlertsHub">
         <!-- Dynamically rendered alerts for category over-budget or rapid pacing -->
@@ -248,6 +295,13 @@
         <input type="text" class="input-box" id="txSearchInput" placeholder="Search by title, note, or merchant..."
           data-i18n-placeholder="search_placeholder">
 
+        <!-- Type Dropdown -->
+        <select class="select-box" id="txFilterType">
+          <option value="all">All Types</option>
+          <option value="expense">Expenses Only</option>
+          <option value="income">Income / Allowance Only</option>
+        </select>
+
         <!-- Category Dropdown -->
         <select class="select-box" id="txFilterCategory">
           <option value="all" data-i18n="filter_all_categories">All Categories</option>
@@ -266,8 +320,9 @@
         <!-- Date Range Filter -->
         <select class="select-box" id="txFilterDate">
           <option value="this_month" data-i18n="filter_this_month">This Month</option>
-          <option value="this_week" data-i18n="filter_this_week">This Week</option>
           <option value="today" data-i18n="filter_today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="this_week" data-i18n="filter_this_week">This Week</option>
           <option value="all" data-i18n="filter_all_time">All Time</option>
         </select>
 
@@ -529,6 +584,40 @@
         </div>
       </div>
 
+      <!-- Set Monthly Budget Target Control Card -->
+      <div class="glass-card budget-target-card" id="budgetTargetController">
+        <div class="budget-target-header">
+          <div>
+            <h3 class="budget-target-title">Set Monthly Allowance & Budget</h3>
+            <p class="stat-footer-text">Adjust your overall monthly pool and choose how to distribute it across categories</p>
+          </div>
+          <div class="budget-target-actions">
+            <div class="budget-target-input-box">
+              <span class="currency-prefix" id="budgetCurrencyPrefix">₹</span>
+              <input type="number" id="budgetTargetAllowanceInput" class="input-box" min="100" step="100" placeholder="15000">
+            </div>
+            <button class="btn btn-primary" id="btnUpdateOverallBudget">
+              <span>✓</span> Set Overall Budget
+            </button>
+          </div>
+        </div>
+        <div class="budget-preset-pills-row">
+          <span class="preset-label">Quick Allocation Presets:</span>
+          <button type="button" class="preset-pill-btn" data-preset="50_30_20">
+            🎯 50/30/20 College Rule
+          </button>
+          <button type="button" class="preset-pill-btn" data-preset="frugal">
+            🛡️ Frugal Saver (65/15/20)
+          </button>
+          <button type="button" class="preset-pill-btn" data-preset="balanced">
+            ⚖️ Balanced Campus (45/35/20)
+          </button>
+          <button type="button" class="preset-pill-btn" data-preset="equal">
+            ➗ Equal Split
+          </button>
+        </div>
+      </div>
+
       <!-- Summary Cards -->
       <div class="budget-summary-header">
         <div class="glass-card stat-card">
@@ -706,6 +795,10 @@
               <button class="btn btn-outline" id="btnExportJson" data-i18n="btn_export_json">
                 Backup Data (JSON)
               </button>
+              <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+              <button class="btn btn-outline" id="btnImportJson">
+                📥 Restore Backup (JSON)
+              </button>
               <button class="btn btn-outline" id="btnLoadSampleData" data-i18n="btn_import_sample">
                 Load College Sample Data
               </button>
@@ -742,7 +835,14 @@
       <form id="editTransactionForm">
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label" data-i18n="lbl_expense_name">Expense Details</label>
+            <label class="form-label">Transaction Type</label>
+            <select id="editModalType" class="select-box">
+              <option value="expense">Expense</option>
+              <option value="income">Income / Allowance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="lbl_expense_name">Expense / Item Details</label>
             <input type="text" id="editModalTitle" class="input-box" required>
           </div>
           <div class="form-group">

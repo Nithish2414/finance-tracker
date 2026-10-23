@@ -137,7 +137,10 @@ class CalendarManager {
     if (this.selectedDay) {
       this.showDayDetails(this.selectedDay, dailyMap[this.selectedDay], year, month);
     } else {
-      this.hideDayDetails();
+      const detailsContainer = document.getElementById("calendarDayDetails");
+      if (detailsContainer) {
+        detailsContainer.style.display = "none";
+      }
     }
   }
 
@@ -164,7 +167,12 @@ class CalendarManager {
               <button class="action-icon-btn" onclick="calendarMgr.hideDayDetails()" title="Close">✕</button>
             </div>
           </div>
-          <p class="empty-note" style="color: var(--text-dim); font-size: 13px;">No expenses logged on this day. Great saving discipline!</p>
+          <p class="empty-note" style="color: var(--color-muted-slate); font-size: 13px; margin: 8px 0 14px;">No expenses logged on this day. Great saving discipline!</p>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="btn btn-sm btn-primary" onclick="calendarMgr.quickAddOnDate(${year}, ${month}, ${day})">
+              ＋ Add Expense on this Date
+            </button>
+          </div>
         </div>
       `;
       return;
@@ -203,6 +211,11 @@ class CalendarManager {
         <div class="day-items-list">
           ${itemsHtml}
         </div>
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--color-border-beige); display: flex; justify-content: flex-end;">
+          <button class="btn btn-sm btn-primary" onclick="calendarMgr.quickAddOnDate(${year}, ${month}, ${day})">
+            ＋ Add Expense on this Date
+          </button>
+        </div>
       </div>
     `;
 
@@ -210,6 +223,17 @@ class CalendarManager {
     setTimeout(() => {
       detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 50);
+  }
+
+  quickAddOnDate(year, month, day) {
+    const d = new Date(year, month, day, 12, 0);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    const dateInput = document.getElementById("addDateInput");
+    if (dateInput) {
+      dateInput.value = d.toISOString().slice(0, 16);
+    }
+    app.switchSlide("add");
+    app.playHapticSound("click");
   }
 
   hideDayDetails() {

@@ -8,6 +8,7 @@ class App {
     this.filterCategory = "all";
     this.filterPayment = "all";
     this.filterTimeframe = "this_month";
+    this.filterType = "all";
     this.sortBy = "date_desc";
   }
 
@@ -239,16 +240,24 @@ class App {
     if (elDailyAvg) elDailyAvg.textContent = store.formatMoney(dailyAvg) + " / day";
     
     if (elRunway) {
-      elRunway.textContent = `${runwayDays} days`;
-      if (runwayDays < daysLeftInMonth) {
-        elRunway.className = "stat-value text-danger";
+      if (totalAllocated === 0) {
+        elRunway.textContent = "0 days";
+        elRunway.className = "stat-value";
       } else {
-        elRunway.className = "stat-value text-success";
+        elRunway.textContent = `${runwayDays} days`;
+        if (runwayDays < daysLeftInMonth) {
+          elRunway.className = "stat-value text-danger";
+        } else {
+          elRunway.className = "stat-value text-success";
+        }
       }
     }
     if (elRunwayDesc) {
-      elRunwayDesc.textContent = `${daysLeftInMonth} ${getTranslation("stat_days_left")}`;
+      elRunwayDesc.textContent = totalAllocated === 0 ? "Set budget to track runway" : `${daysLeftInMonth} ${getTranslation("stat_days_left")}`;
     }
+
+    // Render Daily Money Usage Tracker
+    this.renderDailyUsageTracker();
 
     // Render Warnings / Alert Hub
     this.renderDashboardAlerts();
@@ -260,6 +269,78 @@ class App {
     chartMgr.renderSpendingOverview();
     chartMgr.renderCategoryDonut();
     calendarMgr.render();
+  }
+
+  // --- Daily Money Usage Tracker Render ---
+  renderDailyUsageTracker() {
+    const todayStatus = store.getTodayBurnStatus();
+    const todayExpenses = store.getTodayExpenses();
+    const yesterdaySpent = store.getYesterdayTotalSpent();
+    const daysLeft = store.getDaysLeftInMonth();
+
+    const dateTextEl = document.getElementById("dashTodayDateText");
+    const badgeEl = document.getElementById("dashTodayStatusBadge");
+    const spentValEl = document.getElementById("dashTodaySpentVal");
+    const txCountEl = document.getElementById("dashTodayTxCount");
+    const safeLimitValEl = document.getElementById("dashTodaySafeLimitVal");
+    const daysLeftEl = document.getElementById("dashTodayDaysLeft");
+    const yesterdayValEl = document.getElementById("dashYesterdaySpentVal");
+    const bufferValEl = document.getElementById("dashTodayBufferVal");
+    const bufferDescEl = document.getElementById("dashTodayBufferDesc");
+    const meterFillEl = document.getElementById("dashTodayMeterFill");
+
+    if (dateTextEl) {
+      const now = new Date();
+      dateTextEl.textContent = `${now.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} • Daily Allowance`;
+    }
+
+    if (spentValEl) spentValEl.textContent = store.formatMoney(todayStatus.todaySpent);
+    if (txCountEl) txCountEl.textContent = `${todayExpenses.length} expense(s) logged today`;
+    if (safeLimitValEl) safeLimitValEl.textContent = `${store.formatMoney(todayStatus.safeDailyLimit)} / day`;
+    if (daysLeftEl) daysLeftEl.textContent = `${daysLeft} days remaining this month`;
+    if (yesterdayValEl) yesterdayValEl.textContent = store.formatMoney(yesterdaySpent);
+
+    if (bufferValEl && bufferDescEl) {
+      if (todayStatus.isOverLimit) {
+        bufferValEl.textContent = `+${store.formatMoney(todayStatus.overSpentToday)}`;
+        bufferValEl.className = "daily-metric-val text-danger";
+        bufferDescEl.textContent = "Over safe daily limit!";
+      } else {
+        bufferValEl.textContent = store.formatMoney(todayStatus.remainingToday);
+        bufferValEl.className = "daily-metric-val text-success";
+        bufferDescEl.textContent = "Remaining safe to spend today";
+      }
+    }
+
+    if (todayStatus.safeDailyLimit === 0 && todayStatus.todaySpent === 0) {
+      if (badgeEl) badgeEl.innerHTML = `<span class="badge badge-neutral">Set Budget to Start</span>`;
+      if (safeLimitValEl) safeLimitValEl.textContent = `${store.formatMoney(0)} / day`;
+      if (daysLeftEl) daysLeftEl.textContent = `Set budget to calculate daily target`;
+      if (bufferValEl) {
+        bufferValEl.textContent = store.formatMoney(0);
+        bufferValEl.className = "daily-metric-val";
+      }
+      if (bufferDescEl) bufferDescEl.textContent = `Set monthly budget to unlock buffer`;
+    } else if (badgeEl) {
+      if (todayStatus.isOverLimit) {
+        badgeEl.innerHTML = `<span class="badge badge-danger">⚠️ Over Daily Target (+${store.formatMoney(todayStatus.overSpentToday)})</span>`;
+      } else if (todayStatus.isWarning) {
+        badgeEl.innerHTML = `<span class="badge badge-warning">⚡ Approaching Limit (${todayStatus.percentUsed}%)</span>`;
+      } else {
+        badgeEl.innerHTML = `<span class="badge badge-success">✓ On Track Today (${todayStatus.percentUsed}%)</span>`;
+      }
+    }
+
+    if (meterFillEl) {
+      meterFillEl.style.width = `${Math.min(100, todayStatus.percentUsed)}%`;
+      if (todayStatus.isOverLimit) {
+        meterFillEl.className = "daily-meter-fill progress-danger";
+      } else if (todayStatus.isWarning) {
+        meterFillEl.className = "daily-meter-fill progress-warning";
+      } else {
+        meterFillEl.className = "daily-meter-fill progress-success";
+      }
+    }
   }
 
   renderDashboardAlerts() {
@@ -291,8 +372,8 @@ class App {
             <strong>${alert.title}</strong>
             <p>${alert.message}</p>
           </div>
-          <button class="btn btn-sm btn-outline alert-action-btn" onclick="app.switchSlide('budget')">
-            Adjust Budget
+          <button class="btn btn-sm btn-primary alert-action-btn" onclick="app.switchSlide('${alert.actionSlide || 'budget'}')">
+            ${alert.actionSlide ? 'Set Budget Now →' : 'Adjust Budget'}
           </button>
         </div>
       `;
@@ -361,6 +442,7 @@ class App {
   // --- 2. Transactions Render ---
   bindTransactionFilters() {
     const searchInput = document.getElementById("txSearchInput");
+    const typeSelect = document.getElementById("txFilterType");
     const catSelect = document.getElementById("txFilterCategory");
     const paySelect = document.getElementById("txFilterPayment");
     const dateSelect = document.getElementById("txFilterDate");
@@ -370,6 +452,13 @@ class App {
     if (searchInput) {
       searchInput.addEventListener("input", e => {
         this.searchQuery = e.target.value.toLowerCase();
+        this.renderTransactions();
+      });
+    }
+
+    if (typeSelect) {
+      typeSelect.addEventListener("change", e => {
+        this.filterType = e.target.value;
         this.renderTransactions();
       });
     }
@@ -426,21 +515,31 @@ class App {
       );
     }
 
-    // 2. Category filter
+    // 2. Type filter (all, expense, income)
+    if (this.filterType && this.filterType !== "all") {
+      items = items.filter(t => t.type === this.filterType);
+    }
+
+    // 3. Category filter
     if (this.filterCategory !== "all") {
       items = items.filter(t => t.category === this.filterCategory);
     }
 
-    // 3. Payment method filter
+    // 4. Payment method filter
     if (this.filterPayment !== "all") {
       items = items.filter(t => t.paymentMethod === this.filterPayment);
     }
 
-    // 4. Timeframe filter
+    // 5. Timeframe filter
     const now = new Date();
     if (this.filterTimeframe === "today") {
       const todayStr = now.toDateString();
       items = items.filter(t => new Date(t.date).toDateString() === todayStr);
+    } else if (this.filterTimeframe === "yesterday") {
+      const yest = new Date();
+      yest.setDate(yest.getDate() - 1);
+      const yestStr = yest.toDateString();
+      items = items.filter(t => new Date(t.date).toDateString() === yestStr);
     } else if (this.filterTimeframe === "this_week") {
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       items = items.filter(t => new Date(t.date) >= oneWeekAgo);
@@ -891,7 +990,12 @@ class App {
     }
 
     if (elBurnStatus) {
-      if (runway >= daysLeft) {
+      if (store.getTotalBudget() === 0) {
+        elBurnStatus.innerHTML = `
+          <span class="badge badge-neutral">No Active Budget</span>
+          <p class="runway-text">Set your monthly budget in the Budget tab to view your student runway and burn rate assessment.</p>
+        `;
+      } else if (runway >= daysLeft) {
         elBurnStatus.innerHTML = `
           <span class="badge badge-success">Safe Runway (Healthy)</span>
           <p class="runway-text">Your funds are projected to last <strong>${runway} days</strong>. You have <strong>${daysLeft} days</strong> remaining this month.</p>
@@ -913,9 +1017,51 @@ class App {
     const totalRemEl = document.getElementById("budgetTotalRemaining");
     if (!container) return;
 
+    // Update Overall Budget Controller
+    const targetInput = document.getElementById("budgetTargetAllowanceInput");
+    const prefixEl = document.getElementById("budgetCurrencyPrefix");
+    if (targetInput) targetInput.value = store.profile.monthlyAllowance || 0;
+    if (prefixEl) prefixEl.textContent = store.getCurrency();
+
+    const setOverallBtn = document.getElementById("btnUpdateOverallBudget");
+    if (setOverallBtn) {
+      setOverallBtn.onclick = () => {
+        const val = parseFloat(targetInput ? targetInput.value : 0) || 0;
+        if (val <= 0) {
+          alert("Please enter a valid monthly allowance (greater than 0).");
+          return;
+        }
+        store.setMonthlyBudget(val, true);
+        this.playHapticSound("success");
+        this.showToast(`Monthly budget set to ${store.formatMoney(val)}!`);
+        this.renderAll();
+      };
+    }
+
+    // Preset pills (50/30/20, Frugal, Balanced, Equal)
+    document.querySelectorAll(".budget-preset-pills-row .preset-pill-btn").forEach(btn => {
+      btn.onclick = () => {
+        const preset = btn.getAttribute("data-preset");
+        if (preset) {
+          let allowance = parseFloat(targetInput ? targetInput.value : 0) || store.profile.monthlyAllowance;
+          if (allowance <= 0) {
+            allowance = 10000;
+            if (targetInput) targetInput.value = allowance;
+            store.profile.monthlyAllowance = allowance;
+            store.saveProfile({ monthlyAllowance: allowance });
+          }
+          store.applyPresetBudget(preset);
+          this.playHapticSound("success");
+          this.showToast(`Applied ${btn.textContent.trim()} allocation!`);
+          this.renderAll();
+        }
+      };
+    });
+
     const totalAlloc = store.getTotalBudget();
     const totalSpent = store.getTotalSpentThisMonth();
     const remaining = totalAlloc - totalSpent;
+    const daysInMonth = store.getDaysInCurrentMonth();
 
     if (totalAllocEl) totalAllocEl.textContent = store.formatMoney(totalAlloc);
     if (totalSpentEl) totalSpentEl.textContent = store.formatMoney(totalSpent);
@@ -941,15 +1087,23 @@ class App {
         statusBadge = `<span class="badge badge-neutral">${cat.rawPercent}% Used</span>`;
       }
 
+      const dailyAlloc = Math.round(cat.budget / daysInMonth);
+      const pctOfTotal = totalAlloc > 0 ? Math.round((cat.budget / totalAlloc) * 100) : 0;
+      const sliderMax = Math.max(10000, cat.budget * 2);
+
       html += `
-        <div class="budget-card">
+        <div class="budget-card" id="budgetCard-${cat.id}">
           <div class="budget-card-header">
             <div class="budget-cat-info">
               <span class="budget-cat-icon" style="background: ${cat.color}22; color: ${cat.color};">${cat.icon}</span>
               <div>
-                <h4 class="budget-cat-name">${getTranslation(cat.nameKey)}</h4>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h4 class="budget-cat-name">${getTranslation(cat.nameKey)}</h4>
+                  <span class="budget-percent-badge">${pctOfTotal}% of pool</span>
+                </div>
                 <div class="budget-cat-sub">
                   ${getTranslation('spent')}: <strong>${store.formatMoney(cat.spent)}</strong> of <strong>${store.formatMoney(cat.budget)}</strong>
+                  <span class="budget-daily-badge">~${store.formatMoney(dailyAlloc)}/day</span>
                 </div>
               </div>
             </div>
@@ -962,6 +1116,11 @@ class App {
             </div>
           </div>
 
+          <!-- Synchronized Range Slider -->
+          <div class="budget-slider-wrapper">
+            <input type="range" class="budget-slider" data-cat-id="${cat.id}" min="0" max="${sliderMax}" step="50" value="${cat.budget}">
+          </div>
+
           <!-- Progress Bar -->
           <div class="budget-progress-track">
             <div class="budget-progress-fill ${progressClass}" style="width: ${cat.percent}%;"></div>
@@ -969,7 +1128,7 @@ class App {
 
           <div class="budget-card-footer">
             <span>${getTranslation('remaining')}: <strong class="${cat.remaining < 0 ? 'text-danger' : 'text-success'}">${store.formatMoney(cat.remaining)}</strong></span>
-            <span>Allocated: ${store.formatMoney(cat.budget)}</span>
+            <span>Allocated: <strong>${store.formatMoney(cat.budget)}</strong></span>
           </div>
         </div>
       `;
@@ -977,9 +1136,27 @@ class App {
 
     container.innerHTML = html;
 
-    // Budget input event listeners for live dynamic updates
+    // Interactive synchronized events
     container.querySelectorAll(".budget-alloc-input").forEach(input => {
+      const catId = input.getAttribute("data-cat-id");
+      const slider = container.querySelector(`.budget-slider[data-cat-id="${catId}"]`);
+
+      input.addEventListener("input", () => {
+        if (slider) slider.value = input.value;
+      });
       input.addEventListener("change", () => {
+        this.saveCurrentBudgets();
+      });
+    });
+
+    container.querySelectorAll(".budget-slider").forEach(slider => {
+      const catId = slider.getAttribute("data-cat-id");
+      const numInput = container.querySelector(`.budget-alloc-input[data-cat-id="${catId}"]`);
+
+      slider.addEventListener("input", () => {
+        if (numInput) numInput.value = slider.value;
+      });
+      slider.addEventListener("change", () => {
         this.saveCurrentBudgets();
       });
     });
@@ -994,11 +1171,14 @@ class App {
       };
     }
 
-    // Apply Smart Allocation Button
+    // Apply Smart Allocation Button (50/30/20)
     const applySmartBtn = document.getElementById("btnApplySmartBudget");
     if (applySmartBtn) {
       applySmartBtn.onclick = () => {
-        this.applySmartCollegeBudgets();
+        store.applyPresetBudget("50_30_20");
+        this.playHapticSound("success");
+        this.showToast("Smart 50/30/20 College Budget applied!");
+        this.renderAll();
       };
     }
   }
@@ -1011,32 +1191,6 @@ class App {
       budgetMap[catId] = val;
     });
     store.saveCategoryBudgets(budgetMap);
-    this.renderAll();
-  }
-
-  applySmartCollegeBudgets() {
-    // 50/30/20 College Rule based on total monthly allowance
-    const totalAllowance = store.profile.monthlyAllowance || 15000;
-    
-    // 50% Needs: Food (25%), Accommodation (15%), Transport (7%), Books/Study (3%)
-    // 30% Wants: Entertainment (15%), Shopping (8%), Groceries (7%)
-    // 20% Emergency / Buffer: Health (5%), Utilities (5%), Savings (10%)
-    const smartAllocations = {
-      food: Math.round(totalAllowance * 0.25),
-      accommodation: Math.round(totalAllowance * 0.20),
-      transport: Math.round(totalAllowance * 0.08),
-      books: Math.round(totalAllowance * 0.07),
-      entertainment: Math.round(totalAllowance * 0.12),
-      groceries: Math.round(totalAllowance * 0.08),
-      shopping: Math.round(totalAllowance * 0.06),
-      health: Math.round(totalAllowance * 0.04),
-      utilities: Math.round(totalAllowance * 0.05),
-      other: Math.round(totalAllowance * 0.05)
-    };
-
-    store.saveCategoryBudgets(smartAllocations);
-    this.playHapticSound("success");
-    this.showToast("Smart 50/30/20 College Budget applied!");
     this.renderAll();
   }
 
@@ -1135,6 +1289,34 @@ class App {
       });
     }
 
+    const btnImportJson = document.getElementById("btnImportJson");
+    const jsonFileInput = document.getElementById("jsonFileInput");
+    if (btnImportJson && jsonFileInput) {
+      btnImportJson.addEventListener("click", () => {
+        jsonFileInput.click();
+      });
+
+      jsonFileInput.addEventListener("change", e => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = evt => {
+          try {
+            const parsed = JSON.parse(evt.target.result);
+            store.importBackupData(parsed);
+            this.playHapticSound("success");
+            this.showToast("Backup data restored successfully!");
+            this.renderAll();
+          } catch (err) {
+            alert("Failed to restore backup: " + err.message);
+          } finally {
+            jsonFileInput.value = "";
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
     if (btnLoadSample) {
       btnLoadSample.addEventListener("click", () => {
         if (confirm("Reset current data to realistic college sample expenses?")) {
@@ -1191,13 +1373,15 @@ class App {
         e.preventDefault();
         if (!this.editingTxId) return;
 
+        const typeEl = document.getElementById("editModalType");
         const updated = {
           title: document.getElementById("editModalTitle").value,
           amount: parseFloat(document.getElementById("editModalAmount").value),
           category: document.getElementById("editModalCategory").value,
           paymentMethod: document.getElementById("editModalPayment").value,
           date: document.getElementById("editModalDate").value,
-          notes: document.getElementById("editModalNotes").value
+          notes: document.getElementById("editModalNotes").value,
+          type: typeEl ? typeEl.value : "expense"
         };
 
         store.updateTransaction(this.editingTxId, updated);
@@ -1233,6 +1417,9 @@ class App {
     this.editingTxId = id;
 
     const modal = document.getElementById("editTransactionModal");
+    const typeEl = document.getElementById("editModalType");
+    if (typeEl) typeEl.value = tx.type || "expense";
+
     document.getElementById("editModalTitle").value = tx.title;
     document.getElementById("editModalAmount").value = tx.amount;
     document.getElementById("editModalCategory").value = tx.category;
