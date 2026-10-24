@@ -17,18 +17,27 @@ async def ac():
 
 @pytest.mark.anyio
 async def test_frontend_static_serving(ac):
-    """Test that frontend files (index.html, CSS, JS) are served directly by FastAPI."""
+    """Test that frontend files (index.html, CSS, JS) are served directly by FastAPI with Landing & Auth components."""
     # 1. Root index.html
     res = await ac.get("/")
     assert res.status_code == 200
     assert "Wally" in res.text
     assert "backendStatusPill" in res.text
+    assert "slide-landing" in res.text
+    assert "slide-auth" in res.text
+    assert "signInForm" in res.text
+    assert "signUpForm" in res.text
+    assert "navPublicActions" in res.text
+    assert "navAuthActions" in res.text
     assert "js/api.js" in res.text
 
     # 2. CSS serving
     res = await ac.get("/css/style.css")
     assert res.status_code == 200
     assert "backend-status-pill" in res.text
+    assert "landing-hero" in res.text
+    assert "auth-card" in res.text
+    assert "auth-form" in res.text
 
     # 3. JS serving
     res = await ac.get("/js/api.js")
@@ -38,6 +47,13 @@ async def test_frontend_static_serving(ac):
     res = await ac.get("/js/state.js")
     assert res.status_code == 200
     assert "syncWithBackend" in res.text
+    assert "clearSessionData" in res.text
+
+    res = await ac.get("/js/app.js")
+    assert res.status_code == 200
+    assert "showLanding" in res.text
+    assert "showAuth" in res.text
+    assert "bindAuthForms" in res.text
 
 @pytest.mark.anyio
 async def test_full_student_lifecycle(ac):

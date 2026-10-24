@@ -242,7 +242,7 @@ class StateManager {
 
       // 3. Sync Transactions
       const remoteTxs = await api.getTransactions();
-      if (Array.isArray(remoteTxs) && remoteTxs.length > 0) {
+      if (Array.isArray(remoteTxs)) {
         this.transactions = remoteTxs.map(t => ({
           id: t.id,
           title: t.title,
@@ -256,13 +256,22 @@ class StateManager {
         localStorage.setItem("fincampus_transactions", JSON.stringify(this.transactions));
       }
 
-      console.log("Synchronized state with Python Backend.");
+      console.log("Synchronized state with Python Backend. Transactions count:", this.transactions.length);
       if (window.app && typeof window.app.renderAll === "function") {
         window.app.renderAll();
       }
     } catch (err) {
       console.warn("Backend sync notice:", err.message);
     }
+  }
+
+  clearSessionData() {
+    this.profile = { ...DEFAULT_PROFILE };
+    this.categories = DEFAULT_CATEGORIES.map(c => ({ ...c, defaultBudget: 0 }));
+    this.transactions = [];
+    localStorage.removeItem("fincampus_transactions");
+    localStorage.removeItem("fincampus_categories");
+    localStorage.removeItem("fincampus_profile");
   }
 
   getCategory(id) {

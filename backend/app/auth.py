@@ -89,30 +89,22 @@ def get_current_user(
     auth: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
-    """Dependency: Extract current user from Bearer token, or fallback to the demo user."""
-    if auth and auth.credentials:
-        payload = decode_access_token(auth.credentials)
-        if payload and "sub" in payload:
-            user = db.query(User).filter(User.id == int(payload["sub"])).first()
-            if user:
-                return user
-
-    # If no token or invalid token, provide default demo student (Arjun Sharma)
-    demo_user = db.query(User).filter(User.email == "arjun.sharma@college.edu").first()
-    if not demo_user:
-        # Create demo user on the fly if not seeded yet
-        demo_user = User(
-            email="arjun.sharma@college.edu",
-            password_hash=hash_password("college123"),
-            name="Arjun Sharma",
-            university="National Institute of Technology",
-            year="3rd Year (Semester 5)",
-            monthly_allowance=15000.0,
-            currency="₹",
-            sound_enabled=True,
-            avatar="🎓"
+    """Dependency: Extract current user from Bearer token."""
+    if not auth or not auth.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication credentials were not provided."
         )
-        db.add(demo_user)
-        db.commit()
-        db.refresh(demo_user)
-    return demo_user
+    payload = decode_access_token(auth.credentials)
+    if not payload or "sub" not in payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired authentication token."
+        )
+    user = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account not found."
+        )
+    return user

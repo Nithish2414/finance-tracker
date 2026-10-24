@@ -12,7 +12,7 @@ class App {
     this.sortBy = "date_desc";
   }
 
-  init() {
+  async init() {
     // Load saved language
     const savedLang = localStorage.getItem("fincampus_lang") || "en";
     setLanguage(savedLang);
@@ -24,37 +24,280 @@ class App {
     this.bindModals();
     this.bindProfileSettings();
     this.bindCalendarControls();
-
-    // Populate initial views
-    this.renderAll();
+    this.bindAuthForms();
 
     // Setup window resize handler for charts
     window.addEventListener("resize", () => {
       chartMgr.updateAll();
     });
 
-    // Check & display backend status
+    // Check backend status & restore session if authenticated
     if (typeof api !== "undefined") {
-      api.init().then(online => {
-        this.updateBackendStatus(online);
-      });
       api.onStatusChange = (online) => {
         this.updateBackendStatus(online);
       };
+
+      const authenticated = await api.init();
+      this.updateBackendStatus(api.isOnline);
+
+      if (authenticated) {
+        await store.syncWithBackend();
+        this.showAuthenticatedApp("dashboard");
+      } else {
+        this.showLanding();
+      }
+    } else {
+      this.showLanding();
     }
 
     console.log("Wally App Initialized Successfully.");
   }
 
   updateBackendStatus(isOnline) {
-    const pill = document.getElementById("backendStatusPill");
-    if (!pill) return;
-    if (isOnline) {
-      pill.className = "backend-status-pill online";
-      pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Connected (FastAPI)</span>`;
+    const pills = [
+      document.getElementById("backendStatusPill"),
+      document.getElementById("backendStatusPillPublic")
+    ];
+    pills.forEach(pill => {
+      if (!pill) return;
+      if (isOnline) {
+        pill.className = "backend-status-pill online";
+        pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Connected (FastAPI)</span>`;
+      } else {
+        pill.className = "backend-status-pill offline";
+        pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Offline (Local Cache)</span>`;
+      }
+    });
+  }
+
+  handleBrandClick() {
+    if (typeof api !== "undefined" && api.isAuthenticated()) {
+      this.switchSlide("dashboard");
     } else {
-      pill.className = "backend-status-pill offline";
-      pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Offline (Local Cache)</span>`;
+      this.showLanding();
+    }
+  }
+
+  showLanding() {
+    const navTabs = document.getElementById("navTabs");
+    const navAuthActions = document.getElementById("navAuthActions");
+    const navPublicActions = document.getElementById("navPublicActions");
+
+    if (navTabs) navTabs.style.display = "none";
+    if (navAuthActions) navAuthActions.style.display = "none";
+    if (navPublicActions) navPublicActions.style.display = "flex";
+
+    this.switchSlide("landing");
+  }
+
+  showAuth(mode = "signin") {
+    const navTabs = document.getElementById("navTabs");
+    const navAuthActions = document.getElementById("navAuthActions");
+    const navPublicActions = document.getElementById("navPublicActions");
+
+    if (navTabs) navTabs.style.display = "none";
+    if (navAuthActions) navAuthActions.style.display = "none";
+    if (navPublicActions) navPublicActions.style.display = "flex";
+
+    this.switchAuthTab(mode);
+    this.switchSlide("auth");
+  }
+
+  switchAuthTab(mode) {
+    const tabSignIn = document.getElementById("tabBtnSignIn");
+    const tabSignUp = document.getElementById("tabBtnSignUp");
+    const formSignIn = document.getElementById("signInForm");
+    const formSignUp = document.getElementById("signUpForm");
+    const title = document.getElementById("authCardTitle");
+    const subtitle = document.getElementById("authCardSubtitle");
+    const alertBox = document.getElementById("authErrorAlert");
+
+    if (alertBox) {
+      alertBox.style.display = "none";
+      alertBox.textContent = "";
+      alertBox.className = "auth-alert";
+    }
+
+    if (mode === "signup") {
+      if (tabSignIn) tabSignIn.classList.remove("active");
+      if (tabSignUp) tabSignUp.classList.add("active");
+      if (formSignIn) formSignIn.style.display = "none";
+      if (formSignUp) formSignUp.style.display = "flex";
+      if (title) title.textContent = "Create Account";
+      if (subtitle) subtitle.textContent = "Start fresh with zero clutter and intelligent pacing";
+    } else {
+      if (tabSignIn) tabSignIn.classList.add("active");
+      if (tabSignUp) tabSignUp.classList.remove("active");
+      if (formSignIn) formSignIn.style.display = "flex";
+      if (formSignUp) formSignUp.style.display = "none";
+      if (title) title.textContent = "Welcome Back";
+      if (subtitle) subtitle.textContent = "Sign in to resume where you left off";
+    }
+  }
+
+  showAuthError(message) {
+    const alertBox = document.getElementById("authErrorAlert");
+    if (!alertBox) return;
+    alertBox.textContent = message;
+    alertBox.className = "auth-alert error";
+    alertBox.style.display = "block";
+  }
+
+  showAuthenticatedApp(targetSlide = "dashboard") {
+    const navTabs = document.getElementById("navTabs");
+    const navAuthActions = document.getElementById("navAuthActions");
+    const navPublicActions = document.getElementById("navPublicActions");
+
+    if (navTabs) navTabs.style.display = "flex";
+    if (navAuthActions) navAuthActions.style.display = "flex";
+    if (navPublicActions) navPublicActions.style.display = "none";
+
+    this.renderHeader();
+    this.renderAll();
+    this.switchSlide(targetSlide);
+  }
+
+  logout() {
+    if (typeof api !== "undefined") {
+      api.logout();
+    }
+    store.clearSessionData();
+    this.showLanding();
+    this.showToast("Logged out successfully");
+  }
+
+  bindAuthForms() {
+    // Navigation bar buttons
+    const btnNavSignIn = document.getElementById("btnNavSignIn");
+    if (btnNavSignIn) {
+      btnNavSignIn.addEventListener("click", () => this.showAuth("signin"));
+    }
+
+    const btnNavSignUp = document.getElementById("btnNavSignUp");
+    if (btnNavSignUp) {
+      btnNavSignUp.addEventListener("click", () => this.showAuth("signup"));
+    }
+
+    const btnNavLogout = document.getElementById("btnNavLogout");
+    if (btnNavLogout) {
+      btnNavLogout.addEventListener("click", () => this.logout());
+    }
+
+    // Landing page CTA buttons
+    const btnLandingGetStarted = document.getElementById("btnLandingGetStarted");
+    if (btnLandingGetStarted) {
+      btnLandingGetStarted.addEventListener("click", () => this.showAuth("signup"));
+    }
+
+    const btnLandingBannerGetStarted = document.getElementById("btnLandingBannerGetStarted");
+    if (btnLandingBannerGetStarted) {
+      btnLandingBannerGetStarted.addEventListener("click", () => this.showAuth("signup"));
+    }
+
+    const btnLandingSignIn = document.getElementById("btnLandingSignIn");
+    if (btnLandingSignIn) {
+      btnLandingSignIn.addEventListener("click", () => this.showAuth("signin"));
+    }
+
+    // Auth Card Tab & Mode toggles
+    const tabBtnSignIn = document.getElementById("tabBtnSignIn");
+    if (tabBtnSignIn) {
+      tabBtnSignIn.addEventListener("click", () => this.switchAuthTab("signin"));
+    }
+
+    const tabBtnSignUp = document.getElementById("tabBtnSignUp");
+    if (tabBtnSignUp) {
+      tabBtnSignUp.addEventListener("click", () => this.switchAuthTab("signup"));
+    }
+
+    const linkSwitchToSignUp = document.getElementById("linkSwitchToSignUp");
+    if (linkSwitchToSignUp) {
+      linkSwitchToSignUp.addEventListener("click", () => this.switchAuthTab("signup"));
+    }
+
+    const linkSwitchToSignIn = document.getElementById("linkSwitchToSignIn");
+    if (linkSwitchToSignIn) {
+      linkSwitchToSignIn.addEventListener("click", () => this.switchAuthTab("signin"));
+    }
+
+    const btnAuthBackToLanding = document.getElementById("btnAuthBackToLanding");
+    if (btnAuthBackToLanding) {
+      btnAuthBackToLanding.addEventListener("click", () => this.showLanding());
+    }
+
+    // Sign In form submission
+    const signInForm = document.getElementById("signInForm");
+    if (signInForm) {
+      signInForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+        const submitBtn = document.getElementById("btnSubmitSignIn");
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "<span>Signing In...</span>";
+          }
+          await api.login(email, password);
+          await store.syncWithBackend();
+          this.playHapticSound("success");
+          this.showAuthenticatedApp("dashboard");
+          signInForm.reset();
+        } catch (err) {
+          this.playHapticSound("alert");
+          this.showAuthError(err.message || "Failed to sign in. Please verify your credentials.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "<span>Sign In</span>";
+          }
+        }
+      });
+    }
+
+    // Sign Up form submission
+    const signUpForm = document.getElementById("signUpForm");
+    if (signUpForm) {
+      signUpForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("registerName").value.trim();
+        const email = document.getElementById("registerEmail").value.trim();
+        const password = document.getElementById("registerPassword").value;
+        const university = document.getElementById("registerUniversity").value.trim();
+        const year = document.getElementById("registerYear").value;
+        const monthlyAllowance = Number(document.getElementById("registerAllowance").value) || 0;
+        const currency = document.getElementById("registerCurrency").value;
+        const submitBtn = document.getElementById("btnSubmitSignUp");
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "<span>Creating Account...</span>";
+          }
+          await api.register({
+            name,
+            email,
+            password,
+            university,
+            year,
+            monthly_allowance: monthlyAllowance,
+            currency
+          });
+          await store.syncWithBackend();
+          this.playHapticSound("success");
+          this.showAuthenticatedApp("dashboard");
+          signUpForm.reset();
+        } catch (err) {
+          this.playHapticSound("alert");
+          this.showAuthError(err.message || "Failed to create account. Email may already be in use.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "<span>Create Account & Get Started</span>";
+          }
+        }
+      });
     }
   }
 
@@ -1419,7 +1662,7 @@ class App {
     if (confirmLogoutBtn) {
       confirmLogoutBtn.addEventListener("click", () => {
         logoutModal.style.display = "none";
-        this.showLockScreen();
+        this.logout();
       });
     }
 

@@ -69,6 +69,128 @@ async def test_user_registration_and_login(client):
     assert "access_token" in res.json()
 
 @pytest.mark.anyio
+async def test_fresh_user_has_zero_data_and_restores_on_login(client):
+    """
+    CRITICAL USER REQUIREMENT TEST:
+    1. A new user registering has zero transactions and 0 spent.
+    2. User adds data and leaves.
+    3. Another new user registers and also has zero transactions (complete isolation).
+    4. First user logs back in, and all data is restored exactly where they left it.
+    """
+    import uuid
+    uid = uuid.uuid4().hex[:6]
+    user_a_email = f"user_a_{uid}@college.edu"
+    user_b_email = f"user_b_{uid}@college.edu"
+
+    # Step 1: Register User A
+    res = await client.post("/api/auth/register", json={
+        "email": user_a_email,
+        "password": "PasswordA123",
+        "name": "User Alpha",
+        "university": "Campus Alpha",
+        "monthly_allowance": 14000.0,
+        "currency": "₹"
+    })
+    assert res.status_code == 201
+    user_a_token = res.json()["access_token"]
+    headers_a = {"Authorization": f"Bearer {user_a_token}"}
+
+    # Verify User A has ZERO transactions initially
+    res = await client.get("/api/transactions", headers=headers_a)
+    assert res.status_code == 200
+    txs_a = res.json()
+    assert len(txs_a) == 0, f"Expected 0 initial transactions for new user, got {len(txs_a)}"
+
+    # Verify User A analytics summary has 0 total spent
+    res = await client.get("/api/analytics/summary", headers=headers_a)
+    assert res.status_code == 200
+    summary_a = res.json()
+    assert summary_a["total_spent"] == 0.0
+    assert summary_a["total_income"] == 0.0
+
+    # Step 2: User A adds 2 transactions and customizes a budget
+    res = await client.post("/api/transactions", headers=headers_a, json={
+        "title": "Algorithms Textbook",
+        "amount": 750.0,
+        "category": "books",
+        "payment_method": "pay_upi",
+        "type": "expense"
+    })
+    assert res.status_code == 201
+
+    res = await client.post("/api/transactions", headers=headers_a, json={
+        "title": "Semester Stipend",
+        "amount": 5000.0,
+        "category": "stipend",
+        "payment_method": "pay_bank",
+        "type": "income"
+    })
+    assert res.status_code == 201
+
+    res = await client.put("/api/categories/budgets", headers=headers_a, json={
+        "budgets": {"books": 1200.0, "food": 3000.0}
+    })
+    assert res.status_code == 200
+
+    # Step 3: Register User B - must also have ZERO transactions!
+    res = await client.post("/api/auth/register", json={
+        "email": user_b_email,
+        "password": "PasswordB123",
+        "name": "User Beta",
+        "university": "Campus Beta",
+        "monthly_allowance": 8000.0,
+        "currency": "₹"
+    })
+    assert res.status_code == 201
+    user_b_token = res.json()["access_token"]
+    headers_b = {"Authorization": f"Bearer {user_b_token}"}
+
+    res = await client.get("/api/transactions", headers=headers_b)
+    assert res.status_code == 200
+    txs_b = res.json()
+    assert len(txs_b) == 0, "User B must have ZERO transactions!"
+
+    # Step 4: User A logs back in with email and password
+    res = await client.post("/api/auth/login", json={
+        "email": user_a_email,
+        "password": "PasswordA123"
+    })
+    assert res.status_code == 200
+    new_token_a = res.json()["access_token"]
+    new_headers_a = {"Authorization": f"Bearer {new_token_a}"}
+
+    # Verify User A's data is restored from where they left
+    res = await client.get("/api/transactions", headers=new_headers_a)
+    assert res.status_code == 200
+    restored_txs_a = res.json()
+    assert len(restored_txs_a) == 2, f"Expected 2 restored transactions, got {len(restored_txs_a)}"
+    titles = [t["title"] for t in restored_txs_a]
+    assert "Algorithms Textbook" in titles
+    assert "Semester Stipend" in titles
+
+    # Verify User A's category budgets are restored
+    res = await client.get("/api/categories", headers=new_headers_a)
+    assert res.status_code == 200
+    cats = {c["code"]: c["default_budget"] for c in res.json()}
+    assert cats["books"] == 1200.0
+    assert cats["food"] == 3000.0
+
+@pytest.mark.anyio
+async def test_unauthenticated_access_is_rejected(client):
+    """Verify endpoints strictly require authentication."""
+    # Transactions without auth token
+    res = await client.get("/api/transactions")
+    assert res.status_code == 401
+
+    # Profile without auth token
+    res = await client.get("/api/auth/me")
+    assert res.status_code == 401
+
+    # Analytics without auth token
+    res = await client.get("/api/analytics/summary")
+    assert res.status_code == 401
+
+@pytest.mark.anyio
 async def test_categories_and_budgets(client):
     # Demo token
     res = await client.post("/api/auth/demo")

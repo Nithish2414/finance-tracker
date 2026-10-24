@@ -33,7 +33,8 @@ def get_dashboard_summary(
         Category.user_id == current_user.id,
         Category.type == "expense"
     ).all()
-    monthly_budget = sum(c.default_budget for c in categories)
+    cat_budget_sum = sum(c.default_budget for c in categories)
+    monthly_budget = cat_budget_sum if cat_budget_sum > 0 else (current_user.monthly_allowance or 0.0)
 
     # 2. Current Month Transactions
     month_txs = db.query(Transaction).filter(
@@ -148,7 +149,8 @@ def get_pacing_curve(
         Category.user_id == current_user.id,
         Category.type == "expense"
     ).all()
-    monthly_budget = sum(c.default_budget for c in categories)
+    cat_budget_sum = sum(c.default_budget for c in categories)
+    monthly_budget = cat_budget_sum if cat_budget_sum > 0 else (current_user.monthly_allowance or 0.0)
     ideal_daily_budget = monthly_budget / days_in_month if days_in_month > 0 else 0.0
 
     month_txs = db.query(Transaction).filter(

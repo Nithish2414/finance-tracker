@@ -22,14 +22,14 @@
   <header class="top-navbar" id="topNavbar">
     <div class="nav-container">
       <!-- Brand Logo & Identity -->
-      <div class="brand-section" id="navBrandLogo" onclick="app.switchSlide('dashboard')">
+      <div class="brand-section" id="navBrandLogo" onclick="app.handleBrandClick()">
         <div class="brand-text">
           <h1 data-i18n="appName">Wally</h1>
         </div>
       </div>
 
-      <!-- Navigation Tabs (6 Slides) -->
-      <nav class="nav-links-wrapper" id="navTabs">
+      <!-- Navigation Tabs (6 Slides) - Shown when Logged In -->
+      <nav class="nav-links-wrapper" id="navTabs" style="display: none;">
         <button class="nav-btn active" data-slide="dashboard" id="navBtnDashboard" title="Dashboard">
           <span class="nav-icon">⌂</span>
           <span class="nav-text" data-i18n="nav_dashboard">Dashboard</span>
@@ -56,8 +56,8 @@
         </button>
       </nav>
 
-      <!-- User Profile & Quick Action -->
-      <div class="nav-user-actions">
+      <!-- User Profile & Quick Action - Shown when Logged In -->
+      <div class="nav-user-actions" id="navAuthActions" style="display: none;">
         <div class="backend-status-pill" id="backendStatusPill" title="FastAPI Python Backend Status">
           <span class="status-dot"></span>
           <span class="status-text">Backend: Connecting...</span>
@@ -69,17 +69,278 @@
           <div class="avatar-circle" id="headerAvatar">AR</div>
           <span class="user-name-text" id="headerStudentName">Alex Rivera</span>
         </div>
+        <button class="btn btn-outline btn-sm btn-nav-logout" id="btnNavLogout" title="Sign Out">
+          <span>Logout</span>
+        </button>
+      </div>
+
+      <!-- Public Actions - Shown when Logged Out -->
+      <div class="nav-public-actions" id="navPublicActions">
+        <div class="backend-status-pill" id="backendStatusPillPublic" title="FastAPI Python Backend Status">
+          <span class="status-dot"></span>
+          <span class="status-text">FastAPI Ready</span>
+        </div>
+        <button class="btn btn-outline btn-sm" id="btnNavSignIn">Sign In</button>
+        <button class="btn btn-primary btn-sm" id="btnNavSignUp">Get Started</button>
       </div>
     </div>
   </header>
 
-  <!-- Main Viewport containing the 6 slides -->
+  <!-- Main Viewport containing the slides -->
   <main class="app-viewport">
+
+    <!-- ====================================================================
+         SLIDE 0: LANDING PAGE
+         ==================================================================== -->
+    <section class="slide-section active" id="slide-landing">
+      <!-- Hero Section -->
+      <div class="landing-hero">
+        <div class="landing-hero-badge">
+          <span class="badge-dot"></span>
+          <span>Designed Exclusively for College & University Students</span>
+        </div>
+        <h1 class="landing-hero-title">
+          Keep your pocket money alive until the <span class="highlight-text">last day</span> of the month.
+        </h1>
+        <p class="landing-hero-subtitle">
+          Wally takes the guesswork out of student life. Calculate your true campus runway, pace daily spending, track canteen chai and hostel mess, and balance 50/30/20 effortlessly. No spreadsheets, zero stress.
+        </p>
+        <div class="landing-hero-cta">
+          <button class="btn btn-primary btn-lg" id="btnLandingGetStarted">
+            <span>Get Started Free</span>
+            <span class="btn-arrow">→</span>
+          </button>
+          <button class="btn btn-outline btn-lg" id="btnLandingSignIn">
+            <span>Sign In to Account</span>
+          </button>
+        </div>
+
+        <!-- Hero Preview Mockup Cards -->
+        <div class="landing-preview-grid">
+          <div class="glass-card preview-card featured">
+            <div class="preview-card-header">
+              <span class="preview-tag">Live Campus Runway</span>
+              <span class="preview-status safe">Healthy</span>
+            </div>
+            <div class="preview-card-metric">22 Days</div>
+            <div class="preview-card-label">Runway Remaining at Current Burn Rate</div>
+            <div class="preview-progress-bar">
+              <div class="preview-progress-fill" style="width: 72%;"></div>
+            </div>
+          </div>
+
+          <div class="glass-card preview-card">
+            <div class="preview-card-header">
+              <span class="preview-tag">Daily Spending Pacer</span>
+              <span class="preview-icon">⏱️</span>
+            </div>
+            <div class="preview-card-metric">₹ 350 / day</div>
+            <div class="preview-card-label">Safe Spending Limit for Remaining Days</div>
+          </div>
+
+          <div class="glass-card preview-card">
+            <div class="preview-card-header">
+              <span class="preview-tag">50 / 30 / 20 Framework</span>
+              <span class="preview-icon">📊</span>
+            </div>
+            <div class="preview-card-metric">Balanced</div>
+            <div class="preview-card-label">Needs: 50% | Wants: 30% | Savings: 20%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Grid: Why Students Choose Wally -->
+      <div class="landing-section">
+        <div class="landing-section-header">
+          <span class="section-badge">Student-Centric Features</span>
+          <h2>Financial peace of mind on campus</h2>
+          <p>Everything built around how college students actually receive, budget, and spend money.</p>
+        </div>
+
+        <div class="landing-features-grid">
+          <div class="glass-card feature-box">
+            <div class="feature-icon" style="background: rgba(237, 106, 75, 0.15); color: var(--color-coral-vermilion);">🚀</div>
+            <h3>Campus Runway Engine</h3>
+            <p>Know the exact date your money will run out before it happens. Wally forecasts your runway in real-time so there are no month-end surprises.</p>
+          </div>
+
+          <div class="glass-card feature-box">
+            <div class="feature-icon" style="background: rgba(165, 196, 174, 0.2); color: var(--color-sage-green);">⏱️</div>
+            <h3>Smart Daily Pacing</h3>
+            <p>A dynamic daily budget ceiling that adjusts automatically based on yesterday's spending. Spend freely without breaking the semester budget.</p>
+          </div>
+
+          <div class="glass-card feature-box">
+            <div class="feature-icon" style="background: rgba(198, 154, 83, 0.15); color: var(--color-brass-gold);">⚖️</div>
+            <h3>50/30/20 Smart Allocation</h3>
+            <p>One-click budgeting rules designed for college: 50% for mess/rent/travel, 30% for canteen & outings, 20% untouched for emergencies.</p>
+          </div>
+
+          <div class="glass-card feature-box">
+            <div class="feature-icon" style="background: rgba(174, 201, 213, 0.25); color: var(--color-dark-slate);">🗓️</div>
+            <h3>Calendar Spending Heatmap</h3>
+            <p>Spot high-spend weekends, exam snack rushes, and bill deadlines visually on a sleek calendar grid. Audit any day in one tap.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-Step Walkthrough -->
+      <div class="landing-section steps-section">
+        <div class="landing-section-header">
+          <span class="section-badge">Simple 3-Step Routine</span>
+          <h2>How Wally keeps you in control</h2>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <h3>Set Your Allowance</h3>
+            <p>Enter your monthly stipend, family pocket money, or freelance income. Wally calculates your daily runway immediately.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <h3>Log In 3 Quick Taps</h3>
+            <p>Paid for tea, auto rickshaw, or photocopies? Tap category, amount, payment method (UPI / Cash / Card), and done.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <h3>Coast to Month End</h3>
+            <p>Follow your pacing bar, stay alert with low-balance warnings, and reach the final day of the semester stress-free.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Call To Action Banner -->
+      <div class="landing-cta-banner glass-card">
+        <div class="cta-content">
+          <h2>Ready to master your student finances?</h2>
+          <p>Join students managing their allowance smarter with Wally. Clean slate, 100% private, and fast.</p>
+        </div>
+        <div class="cta-actions">
+          <button class="btn btn-primary btn-lg" id="btnLandingBannerGetStarted">
+            Create Free Student Account
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE AUTH: SIGN IN & SIGN UP (LOGIN / REGISTER)
+         ==================================================================== -->
+    <section class="slide-section" id="slide-auth">
+      <div class="auth-wrapper">
+        <div class="auth-card glass-card">
+          <!-- Back Link -->
+          <button type="button" class="auth-back-btn" id="btnAuthBackToLanding">
+            ← Back to Home
+          </button>
+
+          <!-- Auth Header -->
+          <div class="auth-header">
+            <div class="auth-logo-badge">Wally</div>
+            <h2 id="authCardTitle">Welcome Back</h2>
+            <p id="authCardSubtitle">Sign in to your student finance account</p>
+          </div>
+
+          <!-- Auth Tab Switcher -->
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab-btn active" id="tabBtnSignIn">Sign In</button>
+            <button type="button" class="auth-tab-btn" id="tabBtnSignUp">Create Account</button>
+          </div>
+
+          <!-- Auth Alert (Errors / Status) -->
+          <div class="auth-alert" id="authErrorAlert" style="display: none;"></div>
+
+          <!-- SIGN IN FORM -->
+          <form class="auth-form" id="signInForm">
+            <div class="form-group">
+              <label for="loginEmail">Email Address</label>
+              <input type="email" id="loginEmail" class="form-input" placeholder="student@college.edu" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnSubmitSignIn">
+              <span>Sign In</span>
+            </button>
+
+            <div class="auth-switch-prompt">
+              <span>New to Wally?</span>
+              <a href="javascript:void(0)" id="linkSwitchToSignUp">Create an account</a>
+            </div>
+          </form>
+
+          <!-- SIGN UP FORM -->
+          <form class="auth-form" id="signUpForm" style="display: none;">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="registerName">Full Name</label>
+                <input type="text" id="registerName" class="form-input" placeholder="Alex Rivera" required autocomplete="name">
+              </div>
+              <div class="form-group">
+                <label for="registerEmail">Email Address</label>
+                <input type="email" id="registerEmail" class="form-input" placeholder="alex@college.edu" required autocomplete="email">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="registerPassword">Password</label>
+              <input type="password" id="registerPassword" class="form-input" placeholder="Create a secure password (min 4 chars)" minlength="4" required autocomplete="new-password">
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="registerUniversity">University / College</label>
+                <input type="text" id="registerUniversity" class="form-input" placeholder="Campus University" value="University / College">
+              </div>
+              <div class="form-group">
+                <label for="registerYear">Year of Study</label>
+                <select id="registerYear" class="form-input">
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                  <option value="Postgraduate">Postgraduate</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="registerAllowance">Monthly Allowance</label>
+                <input type="number" id="registerAllowance" class="form-input" placeholder="15000" min="0" step="500" value="15000">
+              </div>
+              <div class="form-group">
+                <label for="registerCurrency">Currency</label>
+                <select id="registerCurrency" class="form-input">
+                  <option value="₹">₹ (INR)</option>
+                  <option value="$">$ (USD)</option>
+                  <option value="€">€ (EUR)</option>
+                  <option value="£">£ (GBP)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnSubmitSignUp">
+              <span>Create Account & Get Started</span>
+            </button>
+
+            <div class="auth-switch-prompt">
+              <span>Already have an account?</span>
+              <a href="javascript:void(0)" id="linkSwitchToSignIn">Sign In</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
 
     <!-- ====================================================================
          SLIDE 1: DASHBOARD
          ==================================================================== -->
-    <section class="slide-section active" id="slide-dashboard">
+    <section class="slide-section" id="slide-dashboard">
       <!-- Section Header -->
       <div class="section-header-bar">
         <div class="title-group">

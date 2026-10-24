@@ -1,13 +1,14 @@
 // Wally Python Backend API Client
 class ApiClient {
   constructor() {
-    // Automatically detect backend URL
     this.baseUrl = (window.location.port === "8000" || (window.location.protocol.startsWith("http") && window.location.port === ""))
       ? ""
       : "http://localhost:8000";
     this.token = localStorage.getItem("wally_token") || null;
+    this.currentUser = null;
     this.isOnline = false;
     this.onStatusChange = null;
+    this.onAuthChange = null;
   }
 
   async init() {
@@ -15,39 +16,86 @@ class ApiClient {
       const res = await fetch(`${this.baseUrl}/api/health`, { method: "GET" });
       if (res.ok) {
         this.isOnline = true;
-        // If no token stored, authenticate as default demo student
-        if (!this.token) {
-          await this.loginDemo();
-        }
         if (this.onStatusChange) this.onStatusChange(true);
-        console.log("🟢 Connected to Wally Python FastAPI Backend at", this.baseUrl || window.location.origin);
-        return true;
+
+        // Check if there is an existing session token in localStorage
+        if (this.token) {
+          try {
+            const profile = await this.getProfile();
+            if (profile && profile.id) {
+              this.currentUser = profile;
+              console.log("Session restored for:", profile.name, `(${profile.email})`);
+              if (this.onAuthChange) this.onAuthChange(this.currentUser);
+              return true;
+            }
+          } catch (authErr) {
+            console.warn("Stored token is invalid or expired, resetting session.");
+            this.logout();
+          }
+        }
+        return false;
       }
     } catch (e) {
       this.isOnline = false;
       if (this.onStatusChange) this.onStatusChange(false);
-      console.warn("⚠️ Python backend not reachable, operating in offline/localStorage mode:", e.message);
+      console.warn("Python backend offline / unreachable:", e.message);
       return false;
     }
+    return false;
   }
 
-  async loginDemo() {
-    try {
-      const res = await fetch(`${this.baseUrl}/api/auth/demo`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        this.token = data.access_token;
-        localStorage.setItem("wally_token", this.token);
-        return data.user;
-      }
-    } catch (e) {
-      console.error("Demo login error:", e);
+  isAuthenticated() {
+    return !!this.token && !!this.currentUser;
+  }
+
+  async login(email, password) {
+    const res = await fetch(`${this.baseUrl}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim().toLowerCase(), password })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Invalid email or password.");
     }
-    return null;
+
+    const data = await res.json();
+    this.token = data.access_token;
+    this.currentUser = data.user;
+    localStorage.setItem("wally_token", this.token);
+    if (this.onAuthChange) this.onAuthChange(this.currentUser);
+    return data.user;
+  }
+
+  async register(userData) {
+    const res = await fetch(`${this.baseUrl}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Registration failed.");
+    }
+
+    const data = await res.json();
+    this.token = data.access_token;
+    this.currentUser = data.user;
+    localStorage.setItem("wally_token", this.token);
+    if (this.onAuthChange) this.onAuthChange(this.currentUser);
+    return data.user;
+  }
+
+  logout() {
+    this.token = null;
+    this.currentUser = null;
+    localStorage.removeItem("wally_token");
+    if (this.onAuthChange) this.onAuthChange(null);
   }
 
   async request(endpoint, options = {}) {
-    if (!this.isOnline) return null;
     const headers = {
       "Content-Type": "application/json",
       ...(options.headers || {})
@@ -63,12 +111,9 @@ class ApiClient {
       });
 
       if (res.status === 401) {
-        // Token expired; refresh demo token
-        await this.loginDemo();
-        if (this.token) {
-          headers["Authorization"] = `Bearer ${this.token}`;
-          return (await fetch(`${this.baseUrl}${endpoint}`, { ...options, headers })).json();
-        }
+        console.warn("Session expired (401), logging out.");
+        this.logout();
+        throw new Error("Authentication required. Please sign in.");
       }
 
       if (!res.ok) {
