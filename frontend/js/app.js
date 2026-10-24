@@ -33,7 +33,29 @@ class App {
       chartMgr.updateAll();
     });
 
-    console.log("CampusSpend App Initialized Successfully.");
+    // Check & display backend status
+    if (typeof api !== "undefined") {
+      api.init().then(online => {
+        this.updateBackendStatus(online);
+      });
+      api.onStatusChange = (online) => {
+        this.updateBackendStatus(online);
+      };
+    }
+
+    console.log("Wally App Initialized Successfully.");
+  }
+
+  updateBackendStatus(isOnline) {
+    const pill = document.getElementById("backendStatusPill");
+    if (!pill) return;
+    if (isOnline) {
+      pill.className = "backend-status-pill online";
+      pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Connected (FastAPI)</span>`;
+    } else {
+      pill.className = "backend-status-pill offline";
+      pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Offline (Local Cache)</span>`;
+    }
   }
 
   // --- Sound Effects using Web Audio API ---

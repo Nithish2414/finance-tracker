@@ -2450,3 +2450,40 @@ input:checked + .slider:before {
   border-radius: 6px;
 }
 
+
+/* Backend Status Indicator */
+.backend-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  color: #10B981;
+  letter-spacing: 0.02em;
+  transition: var(--transition-fast);
+  user-select: none;
+}
+
+.backend-status-pill .status-dot {
+  width: 7px;
+  height: 7px;
+  background: #10B981;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+  display: inline-block;
+}
+
+.backend-status-pill.offline {
+  background: rgba(237, 106, 75, 0.12);
+  border-color: rgba(237, 106, 75, 0.35);
+  color: #ED6A4B;
+}
+
+.backend-status-pill.offline .status-dot {
+  background: #ED6A4B;
+  box-shadow: 0 0 6px rgba(237, 106, 75, 0.8);
+}

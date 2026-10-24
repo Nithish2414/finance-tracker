@@ -202,6 +202,67 @@ class StateManager {
     this.categories = this.loadCategories();
     this.incomeCategories = DEFAULT_INCOME_CATEGORIES.map(c => ({ ...c }));
     this.transactions = this.loadTransactions();
+
+    // Asynchronously synchronize with Wally Python Backend
+    this.syncWithBackend();
+  }
+
+  async syncWithBackend() {
+    if (typeof api === "undefined") return;
+    try {
+      const connected = await api.init();
+      if (!connected) return;
+
+      // 1. Sync Profile
+      const remoteProfile = await api.getProfile();
+      if (remoteProfile) {
+        this.profile = {
+          name: remoteProfile.name,
+          email: remoteProfile.email,
+          university: remoteProfile.university,
+          year: remoteProfile.year,
+          monthlyAllowance: remoteProfile.monthly_allowance,
+          currency: remoteProfile.currency,
+          soundEnabled: remoteProfile.sound_enabled,
+          avatar: remoteProfile.avatar
+        };
+        localStorage.setItem("fincampus_profile", JSON.stringify(this.profile));
+      }
+
+      // 2. Sync Categories & Budgets
+      const remoteCategories = await api.getCategories();
+      if (Array.isArray(remoteCategories) && remoteCategories.length > 0) {
+        this.categories = DEFAULT_CATEGORIES.map(def => {
+          const match = remoteCategories.find(r => r.code === def.id || r.id === def.id);
+          return match ? { ...def, defaultBudget: Number(match.default_budget || 0) } : def;
+        });
+        const toSave = this.categories.map(c => ({ id: c.id, budget: c.defaultBudget }));
+        localStorage.setItem("fincampus_categories", JSON.stringify(toSave));
+      }
+
+      // 3. Sync Transactions
+      const remoteTxs = await api.getTransactions();
+      if (Array.isArray(remoteTxs) && remoteTxs.length > 0) {
+        this.transactions = remoteTxs.map(t => ({
+          id: t.id,
+          title: t.title,
+          amount: Number(t.amount),
+          category: t.category,
+          paymentMethod: t.payment_method,
+          date: t.date,
+          notes: t.notes || "",
+          type: t.type
+        }));
+        localStorage.setItem("fincampus_transactions", JSON.stringify(this.transactions));
+      }
+
+      console.log("Synchronized state with Python Backend.");
+      if (window.app && typeof window.app.renderAll === "function") {
+        window.app.renderAll();
+      }
+    } catch (err) {
+      console.warn("Backend sync notice:", err.message);
+    }
   }
 
   getCategory(id) {
@@ -229,6 +290,19 @@ class StateManager {
   saveProfile(updated) {
     this.profile = { ...this.profile, ...updated };
     localStorage.setItem("fincampus_profile", JSON.stringify(this.profile));
+
+    if (typeof api !== "undefined" && api.isOnline) {
+      api.updateProfile({
+        name: updated.name,
+        email: updated.email,
+        university: updated.university,
+        year: updated.year,
+        monthly_allowance: updated.monthlyAllowance,
+        currency: updated.currency,
+        sound_enabled: updated.soundEnabled,
+        avatar: updated.avatar
+      }).catch(err => console.warn("API updateProfile:", err));
+    }
   }
 
   loadCategories() {
@@ -252,6 +326,10 @@ class StateManager {
     }));
     const toSave = this.categories.map(c => ({ id: c.id, budget: c.defaultBudget }));
     localStorage.setItem("fincampus_categories", JSON.stringify(toSave));
+
+    if (typeof api !== "undefined" && api.isOnline) {
+      api.updateBudgets(budgetMap).catch(err => console.warn("API updateBudgets:", err));
+    }
 
     // Keep monthly allowance in sync with category total if category sum exceeds monthly allowance
     const totalAlloc = this.getTotalBudget();
@@ -291,6 +369,24 @@ class StateManager {
     };
     this.transactions.unshift(newTx);
     this.saveTransactions(this.transactions);
+
+    if (typeof api !== "undefined" && api.isOnline) {
+      api.createTransaction({
+        title: newTx.title,
+        amount: newTx.amount,
+        category: newTx.category,
+        payment_method: newTx.paymentMethod,
+        date: newTx.date,
+        notes: newTx.notes,
+        type: newTx.type
+      }).then(created => {
+        if (created && created.id) {
+          newTx.id = created.id;
+          this.saveTransactions(this.transactions);
+        }
+      }).catch(err => console.warn("API createTransaction:", err));
+    }
+
     return newTx;
   }
 
@@ -304,6 +400,19 @@ class StateManager {
         type: updatedFields.type || this.transactions[idx].type || "expense"
       };
       this.saveTransactions(this.transactions);
+
+      if (typeof api !== "undefined" && api.isOnline) {
+        api.updateTransaction(id, {
+          title: updatedFields.title,
+          amount: updatedFields.amount !== undefined ? parseFloat(updatedFields.amount) : undefined,
+          category: updatedFields.category,
+          payment_method: updatedFields.paymentMethod,
+          date: updatedFields.date,
+          notes: updatedFields.notes,
+          type: updatedFields.type
+        }).catch(err => console.warn("API updateTransaction:", err));
+      }
+
       return this.transactions[idx];
     }
     return null;
@@ -312,6 +421,10 @@ class StateManager {
   deleteTransaction(id) {
     this.transactions = this.transactions.filter(t => t.id !== id);
     this.saveTransactions(this.transactions);
+
+    if (typeof api !== "undefined" && api.isOnline) {
+      api.deleteTransaction(id).catch(err => console.warn("API deleteTransaction:", err));
+    }
   }
 
   // Reload realistic sample data on explicit user request
@@ -320,6 +433,10 @@ class StateManager {
     this.saveTransactions(this.transactions);
     this.saveProfile({ monthlyAllowance: 15000 });
     this.applyPresetBudget("50_30_20");
+
+    if (typeof api !== "undefined" && api.isOnline) {
+      api.resetSampleTransactions().catch(err => console.warn("API resetSampleTransactions:", err));
+    }
   }
 
   // Reset everything back to complete zero
