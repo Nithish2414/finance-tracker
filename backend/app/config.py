@@ -10,8 +10,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'wally_finance.
 SECRET_KEY = os.getenv("SECRET_KEY", "wally-student-finance-secret-key-change-in-production-2026")
 TOKEN_EXPIRE_DAYS = int(os.getenv("TOKEN_EXPIRE_DAYS", "30"))
 
-# Static frontend folder path (points to "mannus project")
-FRONTEND_DIR = BASE_DIR.parent / "mannus project"
+# Static frontend folder path (points to "frontend" or legacy "mannus project")
+FRONTEND_DIR = (BASE_DIR.parent / "frontend") if (BASE_DIR.parent / "frontend").exists() else (BASE_DIR.parent / "mannus project")
 
 # CORS origins
 CORS_ORIGINS = [
