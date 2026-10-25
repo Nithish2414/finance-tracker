@@ -67,7 +67,7 @@ class App {
       if (!pill) return;
       if (isOnline) {
         pill.className = "backend-status-pill online";
-        pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Connected (FastAPI)</span>`;
+        pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Connected</span>`;
       } else {
         pill.className = "backend-status-pill offline";
         pill.innerHTML = `<span class="status-dot"></span><span class="status-text">Backend: Offline (Local Cache)</span>`;
