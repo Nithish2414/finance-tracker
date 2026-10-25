@@ -36,6 +36,11 @@ class App {
       api.onStatusChange = (online) => {
         this.updateBackendStatus(online);
       };
+      api.onAuthChange = (user) => {
+        if (!user && this.currentSlide !== "landing" && this.currentSlide !== "auth") {
+          this.showAuth("signin");
+        }
+      };
 
       const authenticated = await api.init();
       this.updateBackendStatus(api.isOnline);
@@ -162,7 +167,7 @@ class App {
       api.logout();
     }
     store.clearSessionData();
-    this.showLanding();
+    this.showAuth("signin");
     this.showToast("Logged out successfully");
   }
 

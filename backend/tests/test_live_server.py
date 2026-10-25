@@ -43,7 +43,7 @@ def test_live_server_boot():
             assert res.status == 200
             html = res.read().decode()
             assert "Wally" in html
-            assert "backendStatusPill" in html
+            assert "headerProfilePill" in html
             print("[SUCCESS] Frontend root / successfully served by FastAPI.")
 
         # Verify demo login endpoint

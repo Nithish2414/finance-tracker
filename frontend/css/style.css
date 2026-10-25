@@ -227,15 +227,17 @@ h1, h2, h3, h4, h5, .brand-logo, .stat-value {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
 }
 
 .brand-section {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   cursor: pointer;
   user-select: none;
+  flex: 1 0 0;
+  justify-content: flex-start;
 }
 
 .brand-gem {
@@ -300,11 +302,13 @@ h1, h2, h3, h4, h5, .brand-logo, .stat-value {
 .nav-links-wrapper {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   background: rgba(38, 58, 65, 0.65);
-  padding: 5px;
+  padding: 6px 10px;
   border-radius: 16px;
   border: 1px solid rgba(230, 225, 215, 0.12);
+  flex: 0 0 auto;
 }
 
 .nav-btn {
@@ -345,7 +349,9 @@ h1, h2, h3, h4, h5, .brand-logo, .stat-value {
 .nav-user-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 16px;
+  flex: 1 0 0;
 }
 
 .allowance-badge {
@@ -2451,41 +2457,9 @@ input:checked + .slider:before {
 }
 
 
-/* Backend Status Indicator */
+/* Backend Status Indicator (Hidden from top layer) */
 .backend-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  color: #10B981;
-  letter-spacing: 0.02em;
-  transition: var(--transition-fast);
-  user-select: none;
-}
-
-.backend-status-pill .status-dot {
-  width: 7px;
-  height: 7px;
-  background: #10B981;
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
-  display: inline-block;
-}
-
-.backend-status-pill.offline {
-  background: rgba(237, 106, 75, 0.12);
-  border-color: rgba(237, 106, 75, 0.35);
-  color: #ED6A4B;
-}
-
-.backend-status-pill.offline .status-dot {
-  background: #ED6A4B;
-  box-shadow: 0 0 6px rgba(237, 106, 75, 0.8);
+  display: none !important;
 }
 
 /* ==========================================================================
@@ -2496,7 +2470,9 @@ input:checked + .slider:before {
 .nav-public-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 14px;
+  flex: 1 0 0;
 }
 
 .btn-nav-logout {

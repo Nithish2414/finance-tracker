@@ -22,7 +22,8 @@ async def test_frontend_static_serving(ac):
     res = await ac.get("/")
     assert res.status_code == 200
     assert "Wally" in res.text
-    assert "backendStatusPill" in res.text
+    assert "headerProfilePill" in res.text
+    assert "headerAllowanceBadge" in res.text
     assert "slide-landing" in res.text
     assert "slide-auth" in res.text
     assert "signInForm" in res.text
