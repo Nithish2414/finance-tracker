@@ -1,9 +1,9 @@
 // Wally Python Backend API Client
 class ApiClient {
   constructor() {
-    this.baseUrl = (window.location.port === "8000" || (window.location.protocol.startsWith("http") && window.location.port === ""))
-      ? ""
-      : "http://localhost:8000";
+    // Same-origin in production (Vercel serves /api through the Python function).
+    // A configured URL is supported for split frontend/backend deployments.
+    this.baseUrl = (window.API_BASE_URL || "").replace(/\/+$/, "");
     this.token = localStorage.getItem("wally_token") || null;
     this.currentUser = null;
     this.isOnline = false;
